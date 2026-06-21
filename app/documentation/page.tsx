@@ -54,7 +54,7 @@ export default function DocumentationPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold tracking-tight">BRANCHES</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm">+ NEW BRANCH</Button></DialogTrigger>
+          <DialogTrigger asChild><Button size="sm"> + NEW BRANCH</Button></DialogTrigger>
           <DialogContent className="max-w-md w-[90vw]"> 
             <DialogHeader><DialogTitle>Add New Branch</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
@@ -76,74 +76,53 @@ export default function DocumentationPage() {
         </Dialog>
       </div>
 
-      <div className="pt-4 border-t border-slate-200">
+      <div className="pt-4">
         {branches.map((b, i) => (
-          <div key={i} className="flex items-center justify-between px-2 py-3 border-b border-slate-200 hover:bg-slate-50">
+          <div key={i} className="flex items-center justify-between px-2 py-3 hover:bg-slate-50 transition-colors">
             <span className="font-semibold text-sm text-slate-700">{b.name}</span>
             <div className="flex gap-2 items-center">
               
               <Dialog onOpenChange={(isOpen) => !isOpen && setEditingIndex(null)}>
-  <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2 border border-blue-500">NOTE</Button></DialogTrigger>
-  
-  {/* Dito ang fix: Dagdagan ng flex flex-col para manatili ang button sa ilalim */}
-  <DialogContent className="w-[90vw] max-w-sm border-2 border-blue-500 p-6 flex flex-col">
-    <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
-    
-    {editingIndex === i ? (
-      <div className="space-y-4 w-full">
-        <Textarea 
-          value={editRemarks} 
-          onChange={(e) => setEditRemarks(e.target.value)} 
-          className="w-full min-h-[100px] border-blue-500" 
-        />
-        <Button onClick={() => handleEditSave(i)} className="w-full">Save Changes</Button>
-      </div>
-    ) : (
-      <div className="space-y-4 w-full">
-        {/* Dito ang fix: min-w-0 para gumana ang wrapping sa loob ng flex container */}
-        <p className="p-4 bg-slate-50 rounded border border-blue-500 text-sm break-words whitespace-pre-wrap min-w-0 w-full">
-          {b.notes || "No remarks."}
-        </p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => { setEditingIndex(i); setEditRemarks(b.notes); }} 
-          className="w-full border-blue-500"
-        >
-          Edit Remarks
-        </Button>
-      </div>
-    )}
-  </DialogContent>
-</Dialog>
+                <DialogTrigger asChild><Button variant="ghost" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
+                <DialogContent className="w-[90vw] max-w-sm p-6 flex flex-col">
+                  <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
+                  {editingIndex === i ? (
+                    <div className="space-y-4 w-full">
+                      <Textarea value={editRemarks} onChange={(e) => setEditRemarks(e.target.value)} className="w-full min-h-[100px]" />
+                      <Button onClick={() => handleEditSave(i)} className="w-full">Save Changes</Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 w-full">
+                      <p className="p-4 bg-slate-50 rounded text-sm break-words whitespace-pre-wrap min-w-0 w-full">
+                        {b.notes || "No remarks."}
+                      </p>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingIndex(i); setEditRemarks(b.notes); }} className="w-full">Edit Remarks</Button>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2 border-blue-500" onClick={() => { setActiveBranch(b); setSelectedIndex(0); }}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setActiveBranch(b); setSelectedIndex(0); }}>
                     VIEW {b.photos?.length || 0}
                   </Button>
                 </DialogTrigger>
-                
-                <DialogContent className="max-w-[500px] w-[90vw] border-2 border-blue-500 p-6">
-                  <DialogHeader>
-                    <DialogTitle>{activeBranch?.name} - Gallery</DialogTitle>
-                  </DialogHeader>
-                  
+                <DialogContent className="max-w-[500px] w-[90vw] p-6">
+                  <DialogHeader><DialogTitle>{activeBranch?.name} - Gallery</DialogTitle></DialogHeader>
                   {selectedIndex !== null && activeBranch?.photos[selectedIndex] && (
                     <div className="mb-4">
-                      <img src={activeBranch.photos[selectedIndex]} className="w-full h-64 object-contain rounded border-2 border-blue-500 bg-slate-100" />
+                      <img src={activeBranch.photos[selectedIndex]} className="w-full h-64 object-contain rounded bg-slate-100" />
                     </div>
                   )}
-
-                  <div className="flex gap-2 overflow-x-auto py-2 border-y-2 border-blue-500">
+                  <div className="flex gap-2 overflow-x-auto py-2">
                     {activeBranch?.photos.map((photo, idx) => (
-                      <img key={idx} src={photo} className={`w-16 h-16 object-cover rounded cursor-pointer border-2 ${selectedIndex === idx ? "border-blue-600" : "border-blue-500"}`} onClick={() => setSelectedIndex(idx)} />
+                      <img key={idx} src={photo} className={`w-16 h-16 object-cover rounded cursor-pointer ${selectedIndex === idx ? "opacity-100" : "opacity-50"}`} onClick={() => setSelectedIndex(idx)} />
                     ))}
                   </div>
-
                   <div className="flex justify-between mt-4 pt-4">
-                    <Button variant="outline" size="sm" className="border-blue-500" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(p => (p !== null ? p - 1 : 0))}>Prev</Button>
-                    <Button variant="outline" size="sm" className="border-blue-500" disabled={selectedIndex === (activeBranch?.photos.length || 1) - 1} onClick={() => setSelectedIndex(p => (p !== null ? p + 1 : 0))}>Next</Button>
+                    <Button variant="ghost" size="sm" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(p => (p !== null ? p - 1 : 0))}>Prev</Button>
+                    <Button variant="ghost" size="sm" disabled={selectedIndex === (activeBranch?.photos.length || 1) - 1} onClick={() => setSelectedIndex(p => (p !== null ? p + 1 : 0))}>Next</Button>
                   </div>
                 </DialogContent>
               </Dialog>

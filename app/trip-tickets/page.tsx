@@ -91,16 +91,14 @@ export default function TripTicketsPage() {
 
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
-      {/* HEADER SECTION - Consistent sa Calendar */}
-      <div className="border-b border-zinc-200 pb-6 mb-6">
+      <div className="pb-6 mb-6">
         <h1 className="text-2xl font-bold text-zinc-900">Trip Tickets Overview</h1>
         <p className="text-zinc-500 text-sm">Manage and monitor all audit branch assignments.</p>
       </div>
       
-      {/* STATS CARDS */}
       <div className="flex gap-4 mb-6">
         {[{l: "Branches", v: stats.totalBranches, c: "text-green-600"}, {l: "Present", v: stats.present, c: "text-blue-500"}, {l: "Absent", v: stats.absent, c: "text-red-500"}].map((s, i) => (
-          <div key={i} className="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm w-48">
+          <div key={i} className="bg-white p-5 rounded-xl border border-zinc-100 shadow-sm w-48">
             <p className="text-xs text-zinc-500 font-bold uppercase">{s.l}</p>
             <p className={`text-3xl font-bold ${s.c}`}>{s.v}</p>
           </div>
@@ -149,15 +147,15 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
-      {/* TABLE CONTAINER - May Border at Shadow */}
-      <div className="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+      {/* Tinanggal ang border classes sa container */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-zinc-50">
-            <TableRow>
-              <TableHead>Branch</TableHead>
-              <TableHead>Auditor</TableHead>
-              <TableHead>Date Range</TableHead>
-              <TableHead>Staff</TableHead>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-none">
+              <TableHead className="text-zinc-500">Branch</TableHead>
+              <TableHead className="text-zinc-500">Auditor</TableHead>
+              <TableHead className="text-zinc-500">Date Range</TableHead>
+              <TableHead className="text-zinc-500">Staff</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -165,6 +163,7 @@ export default function TripTicketsPage() {
             {trips.filter(t => t.branch.toLowerCase().includes(searchQuery.toLowerCase())).map((trip) => (
               <TableRow 
                 key={trip.id} 
+                className="border-none hover:bg-zinc-50"
                 ref={(el) => { rowRefs.current[trip.id] = el; }}
               >
                 <TableCell className="font-medium text-zinc-900">{trip.branch}</TableCell>
@@ -179,7 +178,9 @@ export default function TripTicketsPage() {
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-right"><Button variant="ghost" className="text-red-500 hover:text-red-700" onClick={() => deleteTrip(trip.id)}>Remove</Button></TableCell>
+                <TableCell className="text-right">
+                    <Button variant="ghost" className="text-red-500 h-8" onClick={() => deleteTrip(trip.id)}>Remove</Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
