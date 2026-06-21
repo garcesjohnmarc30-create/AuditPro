@@ -12,8 +12,8 @@ export default function DocumentationPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [notes, setNotes] = useState(""); 
   const [open, setOpen] = useState(false);
-  const [activeBranch, setActiveBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [previewBranch, setPreviewBranch] = useState<{name: string, photos: string[]} | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("myBranches");
@@ -62,7 +62,7 @@ export default function DocumentationPage() {
                 placeholder="Add remarks (max 500 characters)" 
                 maxLength={500} 
                 value={notes} 
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)} 
+                onChange={(e) => setNotes(e.target.value)} 
               />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
@@ -75,40 +75,52 @@ export default function DocumentationPage() {
           <div key={i} className="flex items-center justify-between px-2 py-2 border-b hover:bg-slate-50">
             <span className="font-semibold text-sm text-slate-700">{b.name}</span>
             <div className="flex gap-2 items-center">
-              
-              {/* NOTE BUTTON SA LABAS */}
               <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button>
-                </DialogTrigger>
+                <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>Remarks for {b.name}</DialogTitle></DialogHeader>
                   <p className="text-sm text-slate-700 p-4 bg-slate-50 rounded border whitespace-pre-wrap">{b.notes || "No remarks added."}</p>
                 </DialogContent>
               </Dialog>
 
-              {/* VIEW BUTTON */}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2">
+                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setPreviewBranch(b)}>
                     VIEW {b.photos?.length || 0}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-[80vw] h-[80vh]">
                   <DialogHeader><DialogTitle>{b.name} - Gallery</DialogTitle></DialogHeader>
-                  <div className="grid grid-cols-4 gap-2 overflow-y-auto">
+                  <div className="grid grid-cols-4 gap-4 overflow-y-auto">
                     {b.photos.map((photo, idx) => (
-                      <img key={idx} src={photo} className="w-full h-32 object-cover rounded cursor-pointer" onClick={() => setSelectedIndex(idx)} />
+                      <img 
+                        key={idx} 
+                        src={photo} 
+                        className="w-full h-32 object-cover rounded cursor-pointer transition hover:opacity-70 hover:scale-105" 
+                        onClick={() => setSelectedIndex(idx)} 
+                      />
                     ))}
                   </div>
                 </DialogContent>
               </Dialog>
-
               <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(i)}><Trash2 size={14} /></Button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* FULL SCREEN PREVIEW OVERLAY */}
+      <Dialog open={selectedIndex !== null} onOpenChange={() => setSelectedIndex(null)}>
+        <DialogContent className="max-w-[100vw] w-screen h-screen p-0 border-none bg-black/90 flex items-center justify-center">
+          {selectedIndex !== null && previewBranch && (
+            <>
+              <Button variant="ghost" className="absolute left-4 text-white hover:bg-white/20" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft size={40} /></Button>
+              <img src={previewBranch.photos[selectedIndex]} className="max-w-[90vw] max-h-[85vh] object-contain" />
+              <Button variant="ghost" className="absolute right-4 text-white hover:bg-white/20" onClick={() => setSelectedIndex(prev => Math.min(previewBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight size={40} /></Button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
