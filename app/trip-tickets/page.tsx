@@ -20,13 +20,14 @@ export interface Trip {
   startDate: string;
   endDate: string;
   staff: StaffMember[];
+  auditor: string; // Bagong field
   status: "Complete" | "Lack";
 }
 
 export default function TripTicketsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [newTrip, setNewTrip] = useState({ 
-    branch: "", startDate: "", endDate: "", 
+    branch: "", startDate: "", endDate: "", auditor: "MARC",
     staff: Array(4).fill({ name: "", isPresent: true }),
     status: "Complete" as "Complete" | "Lack" 
   });
@@ -66,41 +67,35 @@ export default function TripTicketsPage() {
         branch: newTrip.branch,
         startDate: newTrip.startDate,
         endDate: newTrip.endDate,
+        auditor: newTrip.auditor, // Save Auditor
         staff: newTrip.staff.filter(s => s.name.trim() !== ""),
         status: newTrip.status
       });
-      setNewTrip({ branch: "", startDate: "", endDate: "", staff: Array(4).fill({ name: "", isPresent: true }), status: "Complete" });
+      setNewTrip({ branch: "", startDate: "", endDate: "", auditor: "MARC", staff: Array(4).fill({ name: "", isPresent: true }), status: "Complete" });
     } catch (e) {
       console.error("Error adding document: ", e);
     }
   };
 
   const deleteTrip = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, "trips", id));
-    } catch (e) {
-      console.error("Error deleting document: ", e);
-    }
+    await deleteDoc(doc(db, "trips", id));
   };
 
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
       <h1 className="text-2xl font-bold text-zinc-900 mb-6">Trip Tickets Overview</h1>
+      
+      {/* Stats Section */}
       <div className="flex gap-4 mb-6">
-        <div className="bg-white p-5 rounded-xl border shadow-sm w-48">
-          <p className="text-xs text-zinc-500 font-bold uppercase">Branches</p>
-          <p className="text-3xl font-bold text-green-600">{stats.totalBranches}</p>
-        </div>
-        <div className="bg-white p-5 rounded-xl border shadow-sm w-48">
-          <p className="text-xs text-zinc-500 font-bold uppercase">Present</p>
-          <p className="text-3xl font-bold text-blue-500">{stats.present}</p>
-        </div>
-        <div className="bg-white p-5 rounded-xl border shadow-sm w-48">
-          <p className="text-xs text-zinc-500 font-bold uppercase">Absent</p>
-          <p className="text-3xl font-bold text-red-500">{stats.absent}</p>
-        </div>
+        {[{l: "Branches", v: stats.totalBranches, c: "text-green-600"}, {l: "Present", v: stats.present, c: "text-blue-500"}, {l: "Absent", v: stats.absent, c: "text-red-500"}].map((s, i) => (
+          <div key={i} className="bg-white p-5 rounded-xl border shadow-sm w-48">
+            <p className="text-xs text-zinc-500 font-bold uppercase">{s.l}</p>
+            <p className={`text-3xl font-bold ${s.c}`}>{s.v}</p>
+          </div>
+        ))}
       </div>
 
+      {/* Add New Trip Modal */}
       <div className="mb-6">
         <Dialog>
           <DialogTrigger asChild><Button>+ New Ticket</Button></DialogTrigger>
@@ -108,8 +103,15 @@ export default function TripTicketsPage() {
             <DialogHeader><DialogTitle>Add New Trip Ticket</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
               <Input placeholder="Branch Name" value={newTrip.branch} onChange={(e) => setNewTrip({...newTrip, branch: e.target.value})} />
-              <Input type="date" value={newTrip.startDate} onChange={(e) => setNewTrip({...newTrip, startDate: e.target.value})} />
-              <Input type="date" value={newTrip.endDate} onChange={(e) => setNewTrip({...newTrip, endDate: e.target.value})} />
+              <div className="flex gap-2">
+                <Input type="date" value={newTrip.startDate} onChange={(e) => setNewTrip({...newTrip, startDate: e.target.value})} />
+                <Input type="date" value={newTrip.endDate} onChange={(e) => setNewTrip({...newTrip, endDate: e.target.value})} />
+              </div>
+              <select className="w-full p-2 border rounded-md" value={newTrip.auditor} onChange={(e) => setNewTrip({...newTrip, auditor: e.target.value})}>
+                <option value="MARC">MARC</option>
+                <option value="JULE">JULE</option>
+                <option value="JAYSON">JAYSON</option>
+              </select>
               <select className="w-full p-2 border rounded-md" value={newTrip.status} onChange={(e) => setNewTrip({...newTrip, status: e.target.value as "Complete" | "Lack"})}>
                 <option value="Complete">Complete Staff</option>
                 <option value="Lack">Lack of Staff</option>
@@ -130,36 +132,34 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
+      {/* Trips Table */}
       <div className="rounded-xl border bg-white shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Branch</TableHead>
+              <TableHead>Auditor</TableHead>
               <TableHead>Date Range</TableHead>
               <TableHead>Staff</TableHead>
-              <TableHead className="text-right"></TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trips.sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((trip) => (
+            {trips.map((trip) => (
               <TableRow key={trip.id}>
                 <TableCell className="font-medium">{trip.branch}</TableCell>
+                <TableCell className="font-semibold text-zinc-600">{trip.auditor || "N/A"}</TableCell>
                 <TableCell className="text-zinc-500 text-sm">{trip.startDate} - {trip.endDate}</TableCell>
                 <TableCell>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-1 flex-wrap">
-                      {trip.staff.map((member, i) => (
-                        <span key={i} className={cn("px-2 py-1 rounded-md text-xs font-medium text-white shadow-sm", member.isPresent ? "bg-blue-400" : "bg-red-500")}>
-                          {member.name}
-                        </span>
-                      ))}
-                    </div>
-                    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold w-fit uppercase", trip.status === "Complete" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
-                      {trip.status === "Complete" ? "Complete Staff" : "Lack of Staff"}
-                    </span>
+                  <div className="flex flex-wrap gap-1">
+                    {trip.staff.map((member, i) => (
+                      <span key={i} className={cn("px-2 py-1 rounded text-[10px] font-bold text-white", member.isPresent ? "bg-blue-400" : "bg-red-500")}>
+                        {member.name}
+                      </span>
+                    ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-right"><Button variant="ghost" className="text-red-500 h-8" onClick={() => deleteTrip(trip.id)}>Remove</Button></TableCell>
+                <TableCell className="text-right"><Button variant="ghost" className="text-red-500" onClick={() => deleteTrip(trip.id)}>Remove</Button></TableCell>
               </TableRow>
             ))}
           </TableBody>
