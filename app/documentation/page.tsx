@@ -101,22 +101,20 @@ export default function DocumentationPage() {
         ))}
       </div>
 
-      {/* FULL SCREEN PREVIEW - Zero transparency, Centered Nav */}
+      {/* FULL SCREEN PREVIEW - Full Transparent background with Top-Center Nav */}
       {selectedIndex !== null && activeBranch && (
-        <div className="fixed inset-0 z-[100] bg-white flex items-center justify-center">
-          {/* Close Button */}
-          <Button variant="ghost" className="absolute top-4 right-4 z-[110]" onClick={() => setSelectedIndex(null)}>
-            <X size={24} />
-          </Button>
-
-          {/* Centered Navigation Buttons */}
-          <div className="absolute top-1/2 left-0 w-full flex justify-between px-4 z-[110] pointer-events-none">
-            <Button variant="outline" className="pointer-events-auto shadow-md" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft /></Button>
-            <Button variant="outline" className="pointer-events-auto shadow-md" onClick={() => setSelectedIndex(prev => Math.min(activeBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight /></Button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          
+          {/* Top-Center Navigation Group */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-[110] bg-black/50 p-2 rounded-full backdrop-blur-sm">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft size={20} /></Button>
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => setSelectedIndex(prev => Math.min(activeBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight size={20} /></Button>
+            <div className="h-6 w-[1px] bg-white/30 mx-1" />
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => setSelectedIndex(null)}><X size={20} /></Button>
           </div>
 
           {/* Main Image */}
-          <img src={activeBranch.photos[selectedIndex]} className="max-h-[90vh] max-w-[90vw] object-contain" />
+          <img src={activeBranch.photos[selectedIndex]} className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl" />
         </div>
       )}
     </div>
