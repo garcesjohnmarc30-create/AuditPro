@@ -44,7 +44,7 @@ export default function DocumentationPage() {
         <h1 className="text-2xl font-bold tracking-tight">BRANCHES</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button size="sm">+ NEW BRANCH</Button></DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md"> {/* Nilagyan ng max-width ang dialog */}
             <DialogHeader><DialogTitle>Add New Branch</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
               <Input placeholder="Branch Name" value={branchName} onChange={(e) => setBranchName(e.target.value)} />
@@ -58,14 +58,14 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
-              {/* Added break-words to ensure text wraps */}
+              {/* Force wrap gamit ang w-full at break-words */}
               <Textarea 
-  placeholder="Add remarks" 
-  maxLength={500} 
-  value={notes} 
-  onChange={(e) => setNotes(e.target.value)} 
-  className="w-full h-32 resize-none overflow-y-auto break-words whitespace-pre-wrap"
-/>
+                placeholder="Add remarks" 
+                maxLength={500} 
+                value={notes} 
+                onChange={(e) => setNotes(e.target.value)} 
+                className="w-full break-words whitespace-pre-wrap resize-none"
+              />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
           </DialogContent>
@@ -79,10 +79,10 @@ export default function DocumentationPage() {
             <div className="flex gap-2 items-center">
               <Dialog>
                 <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-sm"> {/* Nilagyan ng max-width */}
                   <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
-                  {/* Added break-words and w-full to force downward wrapping */}
-                  <p className="text-sm p-4 bg-slate-50 rounded border whitespace-pre-wrap break-words w-full">
+                  {/* Dito ang sekreto: break-words at w-full sa loob ng max-width dialog */}
+                  <p className="text-sm p-4 bg-slate-50 rounded border break-words whitespace-pre-wrap w-full">
                     {b.notes || "No remarks."}
                   </p>
                 </DialogContent>
