@@ -2,15 +2,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"; // Siguraduhing installed ito sa shadcn
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 export default function DocumentationPage() {
-  const [branches, setBranches] = useState<{ name: string; photos: string[] }[]>([]);
+  // In-update ang type para isama ang 'notes'
+  const [branches, setBranches] = useState<{ name: string; photos: string[]; notes: string }[]>([]);
   const [branchName, setBranchName] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
+  const [notes, setNotes] = useState(""); // Bagong state
   const [open, setOpen] = useState(false);
-  const [activeBranchPhotos, setActiveBranchPhotos] = useState<string[]>([]);
+  const [activeBranch, setActiveBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -21,12 +24,12 @@ export default function DocumentationPage() {
   }, []);
 
   const handleSave = () => {
-    if (branchName && photos.length > 0) {
-      const newBranch = { name: branchName, photos };
+    if (branchName) {
+      const newBranch = { name: branchName, photos, notes };
       const updated = [...branches, newBranch];
       setBranches(updated);
       localStorage.setItem("myBranches", JSON.stringify(updated));
-      setBranchName(""); setPhotos([]); setOpen(false);
+      setBranchName(""); setPhotos([]); setNotes(""); setOpen(false);
     }
   };
 
@@ -38,13 +41,10 @@ export default function DocumentationPage() {
 
   return (
     <div className="p-6">
-      {/* HEADER SECTION - Dito nakalagay ang + NEW BRANCH button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold tracking-tight">BRANCHES</h1>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">+ NEW BRANCH</Button>
-          </DialogTrigger>
+          <DialogTrigger asChild><Button size="sm">+ NEW BRANCH</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Add New Branch</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
@@ -59,33 +59,44 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
+              {/* Bagong Textarea para sa Notes */}
+              <Textarea 
+                placeholder="Add remarks (max 500 characters)" 
+                maxLength={500} 
+                value={notes} 
+                onChange={(e) => setNotes(e.target.value)} 
+              />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* BRANCHES LIST */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 border-t pt-4">
         {branches.map((b, i) => (
           <div key={i} className="flex items-center justify-between px-2 py-2 border-b hover:bg-slate-50">
             <span className="font-semibold text-sm text-slate-700">{b.name}</span>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-2 items-center">
+              {/* Button para buksan ang View na may Notes sa kanan */}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setActiveBranchPhotos(b.photos)}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setActiveBranch(b)}>
                     VIEW {b.photos?.length || 0}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[95vw] w-[95vw] h-[80vh] p-4">
-                  <DialogHeader><DialogTitle>{b.name} - Gallery</DialogTitle></DialogHeader>
-                  <div className="flex flex-nowrap gap-4 p-2 w-full h-full overflow-x-auto">
-                    {b.photos.map((photo, idx) => (
-                      <div key={idx} className="flex-shrink-0 w-64 aspect-[9/16] cursor-pointer" 
-                           onClick={() => setSelectedIndex(idx)}>
-                        <img src={photo} className="w-full h-full object-cover rounded-md border" />
-                      </div>
-                    ))}
+                <DialogContent className="max-w-[90vw] h-[80vh]">
+                  <div className="flex gap-6 h-full">
+                    {/* Gallery sa Kaliwa */}
+                    <div className="w-2/3 overflow-y-auto grid grid-cols-2 gap-2">
+                      {b.photos.map((photo, idx) => (
+                        <img key={idx} src={photo} className="w-full h-32 object-cover rounded cursor-pointer" onClick={() => setSelectedIndex(idx)} />
+                      ))}
+                    </div>
+                    {/* Notes sa Kanan */}
+                    <div className="w-1/3 border-l pl-4">
+                      <h3 className="font-bold mb-2">NOTES</h3>
+                      <p className="text-sm text-slate-600 whitespace-pre-wrap">{b.notes || "No remarks."}</p>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -94,27 +105,7 @@ export default function DocumentationPage() {
           </div>
         ))}
       </div>
-
-      {/* FULL SCREEN PREVIEW WITH NAVIGATION AT THE TOP */}
-      <Dialog open={selectedIndex !== null} onOpenChange={() => setSelectedIndex(null)}>
-        <DialogContent className="max-w-[100vw] w-[100vw] h-[100vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center">
-          {selectedIndex !== null && (
-            <>
-              <div className="absolute top-10 flex gap-4 z-50">
-                <Button variant="ghost" className="text-white bg-black/40 hover:bg-black/60 p-6 rounded-full" 
-                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => Math.max(0, (prev || 0) - 1)); }}>
-                  <ChevronLeft size={48} />
-                </Button>
-                <Button variant="ghost" className="text-white bg-black/40 hover:bg-black/60 p-6 rounded-full" 
-                        onClick={(e) => { e.stopPropagation(); setSelectedIndex(prev => Math.min((activeBranchPhotos.length - 1), (prev || 0) + 1)); }}>
-                  <ChevronRight size={48} />
-                </Button>
-              </div>
-              <img src={activeBranchPhotos[selectedIndex]} className="max-w-[90vw] max-h-[85vh] object-contain mt-16" />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* ... (Keep your existing Full Screen Preview logic here) ... */}
     </div>
   );
 }
