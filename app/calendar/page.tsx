@@ -28,14 +28,12 @@ export default function CalendarPage() {
 
   const handleSave = async () => {
     if (!formData.date || !formData.branch) return;
-    
     if (editingId) {
       await updateDoc(doc(db, "calendarEvents", editingId), formData);
       setEditingId(null);
     } else {
       await addDoc(collection(db, "calendarEvents"), formData);
     }
-    
     setFormData({ date: "", branch: "", status: "REGULAR", auditor: "" });
     setIsDialogOpen(false);
   };
@@ -54,9 +52,9 @@ export default function CalendarPage() {
 
   const getStatusStyles = (status: string) => {
     switch (status) {
-      case "SPECIAL": return "bg-green-50 border-green-200 text-green-900";
-      case "CANCELLED": return "bg-red-50 border-red-200 text-red-900";
-      default: return "bg-blue-50 border-blue-200 text-blue-900";
+      case "SPECIAL": return "bg-green-100 border-green-300 text-green-900";
+      case "CANCELLED": return "bg-red-100 border-red-300 text-red-900";
+      default: return "bg-blue-200 border-blue-400 text-blue-950";
     }
   };
 
@@ -65,7 +63,7 @@ export default function CalendarPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8 text-center">Calendar Schedule</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-blue-900">Calendar Schedule</h1>
       
       <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-6">
         <div className="justify-self-start">
@@ -93,7 +91,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="justify-self-center">
-          <h2 className="text-2xl font-bold w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
+          <h2 className="text-2xl font-bold w-48 text-center text-blue-900">{format(currentDate, 'MMMM yyyy')}</h2>
         </div>
 
         <div className="justify-self-end flex gap-2">
@@ -102,9 +100,9 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-zinc-200 border border-zinc-200 rounded-lg overflow-hidden shadow-lg">
+      <div className="grid grid-cols-7 gap-px bg-blue-900 border-2 border-blue-900 rounded-lg overflow-hidden shadow-lg">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="bg-zinc-100 p-2 text-center font-bold text-xs uppercase text-zinc-600">{day}</div>
+          <div key={day} className="bg-blue-800 p-2 text-center font-bold text-xs uppercase text-white">{day}</div>
         ))}
         
         {calendarDays.map((day) => {
@@ -112,8 +110,8 @@ export default function CalendarPage() {
           const isCurrentMonth = isSameMonth(day, monthStart);
 
           return (
-            <div key={day.toString()} className={`bg-white min-h-[120px] p-2 ${!isCurrentMonth ? 'bg-zinc-50' : ''}`}>
-              <span className={`text-sm font-semibold ${!isCurrentMonth ? 'text-zinc-300' : 'text-zinc-900'}`}>
+            <div key={day.toString()} className={`min-h-[120px] p-2 ${isCurrentMonth ? 'bg-blue-50' : 'bg-blue-100/50'}`}>
+              <span className={`text-sm font-semibold ${!isCurrentMonth ? 'text-blue-300' : 'text-blue-900'}`}>
                 {format(day, 'd')}
               </span>
               <div className="mt-1 space-y-1">
@@ -123,10 +121,9 @@ export default function CalendarPage() {
                     <p className="text-[9px] uppercase font-semibold">{trip.status}</p>
                     <p className="text-[9px] font-medium opacity-80 truncate">{trip.auditor}</p>
                     
-                    {/* Hover buttons */}
                     <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                      <button onClick={() => startEditing(trip)} className="hover:text-blue-600"><Edit2 size={10}/></button>
-                      <button onClick={() => handleDelete(trip.id)} className="hover:text-red-600"><Trash2 size={10}/></button>
+                      <button onClick={() => startEditing(trip)} className="hover:text-blue-800"><Edit2 size={10}/></button>
+                      <button onClick={() => handleDelete(trip.id)} className="hover:text-red-700"><Trash2 size={10}/></button>
                     </div>
                   </div>
                 ))}
