@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 export default function DocumentationPage() {
   const [branches, setBranches] = useState<{ name: string; photos: string[]; notes: string }[]>([]);
@@ -88,7 +88,7 @@ export default function DocumentationPage() {
                   <DialogHeader><DialogTitle>{b.name} - Gallery</DialogTitle></DialogHeader>
                   <div className="flex gap-4 overflow-x-auto py-4 h-full">
                     {b.photos.map((photo, idx) => (
-                      <div key={idx} className="flex-shrink-0 w-[120px] h-full cursor-pointer hover:opacity-80" onClick={() => setSelectedIndex(idx)}>
+                      <div key={idx} className="flex-shrink-0 w-[120px] h-full cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedIndex(idx)}>
                         <img src={photo} className="w-full h-full object-cover rounded border" />
                       </div>
                     ))}
@@ -101,15 +101,22 @@ export default function DocumentationPage() {
         ))}
       </div>
 
-      {/* Full-Screen Preview */}
+      {/* FULL SCREEN PREVIEW - Zero transparency, Centered Nav */}
       {selectedIndex !== null && activeBranch && (
-        <div className="fixed inset-0 z-[100] bg-white flex items-center justify-center p-4">
-          <div className="absolute top-4 left-4 flex gap-2">
-            <Button variant="outline" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft /></Button>
-            <Button variant="outline" onClick={() => setSelectedIndex(prev => Math.min(activeBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight /></Button>
+        <div className="fixed inset-0 z-[100] bg-white flex items-center justify-center">
+          {/* Close Button */}
+          <Button variant="ghost" className="absolute top-4 right-4 z-[110]" onClick={() => setSelectedIndex(null)}>
+            <X size={24} />
+          </Button>
+
+          {/* Centered Navigation Buttons */}
+          <div className="absolute top-1/2 left-0 w-full flex justify-between px-4 z-[110] pointer-events-none">
+            <Button variant="outline" className="pointer-events-auto shadow-md" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft /></Button>
+            <Button variant="outline" className="pointer-events-auto shadow-md" onClick={() => setSelectedIndex(prev => Math.min(activeBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight /></Button>
           </div>
-          <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setSelectedIndex(null)}>Close</Button>
-          <img src={activeBranch.photos[selectedIndex]} className="max-h-[80vh] max-w-full object-contain" />
+
+          {/* Main Image */}
+          <img src={activeBranch.photos[selectedIndex]} className="max-h-[90vh] max-w-[90vw] object-contain" />
         </div>
       )}
     </div>
