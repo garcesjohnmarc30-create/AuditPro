@@ -13,7 +13,7 @@ export default function DocumentationPage() {
   const [notes, setNotes] = useState(""); 
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [previewBranch, setPreviewBranch] = useState<{name: string, photos: string[]} | null>(null);
+  const [previewBranch, setPreviewBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("myBranches");
@@ -91,14 +91,16 @@ export default function DocumentationPage() {
                 </DialogTrigger>
                 <DialogContent className="max-w-[80vw] h-[80vh]">
                   <DialogHeader><DialogTitle>{b.name} - Gallery</DialogTitle></DialogHeader>
-                  <div className="grid grid-cols-4 gap-4 overflow-y-auto">
+                  {/* DITO ANG PAGBABAGO: grid-cols-2 para malalaking thumbnail */}
+                  <div className="grid grid-cols-2 gap-4 overflow-y-auto pr-2">
                     {b.photos.map((photo, idx) => (
-                      <img 
-                        key={idx} 
-                        src={photo} 
-                        className="w-full h-32 object-cover rounded cursor-pointer transition hover:opacity-70 hover:scale-105" 
-                        onClick={() => setSelectedIndex(idx)} 
-                      />
+                      <div key={idx} className="aspect-video">
+                        <img 
+                          src={photo} 
+                          className="w-full h-full object-cover rounded cursor-pointer transition hover:opacity-70 hover:scale-105 border" 
+                          onClick={() => setSelectedIndex(idx)} 
+                        />
+                      </div>
                     ))}
                   </div>
                 </DialogContent>
@@ -109,14 +111,26 @@ export default function DocumentationPage() {
         ))}
       </div>
 
-      {/* FULL SCREEN PREVIEW OVERLAY */}
+      {/* FULL SCREEN PREVIEW OVERLAY - DITO ANG PAGBABAGO (White Background) */}
       <Dialog open={selectedIndex !== null} onOpenChange={() => setSelectedIndex(null)}>
-        <DialogContent className="max-w-[100vw] w-screen h-screen p-0 border-none bg-black/90 flex items-center justify-center">
+        <DialogContent className="max-w-[90vw] w-[90vw] h-[90vh] p-4 bg-white border-none shadow-2xl flex flex-col items-center justify-center">
           {selectedIndex !== null && previewBranch && (
             <>
-              <Button variant="ghost" className="absolute left-4 text-white hover:bg-white/20" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft size={40} /></Button>
-              <img src={previewBranch.photos[selectedIndex]} className="max-w-[90vw] max-h-[85vh] object-contain" />
-              <Button variant="ghost" className="absolute right-4 text-white hover:bg-white/20" onClick={() => setSelectedIndex(prev => Math.min(previewBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight size={40} /></Button>
+              <div className="absolute left-4 z-50">
+                <Button variant="ghost" size="icon" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}>
+                  <ChevronLeft size={32} />
+                </Button>
+              </div>
+              
+              <div className="w-full h-full flex items-center justify-center overflow-hidden">
+                <img src={previewBranch.photos[selectedIndex]} className="max-w-full max-h-full object-contain" />
+              </div>
+
+              <div className="absolute right-4 z-50">
+                <Button variant="ghost" size="icon" onClick={() => setSelectedIndex(prev => Math.min(previewBranch.photos.length - 1, (prev || 0) + 1))}>
+                  <ChevronRight size={32} />
+                </Button>
+              </div>
             </>
           )}
         </DialogContent>
