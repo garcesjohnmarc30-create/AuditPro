@@ -44,7 +44,7 @@ export default function DocumentationPage() {
         <h1 className="text-2xl font-bold tracking-tight">BRANCHES</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button size="sm">+ NEW BRANCH</Button></DialogTrigger>
-          <DialogContent className="max-w-md"> {/* Nilagyan ng max-width ang dialog */}
+          <DialogContent className="max-w-md w-[90vw]"> 
             <DialogHeader><DialogTitle>Add New Branch</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
               <Input placeholder="Branch Name" value={branchName} onChange={(e) => setBranchName(e.target.value)} />
@@ -58,13 +58,14 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
-              {/* Force wrap gamit ang w-full at break-words */}
+              {/* Force wrap gamit ang break-all */}
               <Textarea 
                 placeholder="Add remarks" 
                 maxLength={500} 
                 value={notes} 
                 onChange={(e) => setNotes(e.target.value)} 
-                className="w-full break-words whitespace-pre-wrap resize-none"
+                className="w-full resize-none break-all"
+                style={{ wordBreak: 'break-all' }}
               />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
@@ -79,10 +80,10 @@ export default function DocumentationPage() {
             <div className="flex gap-2 items-center">
               <Dialog>
                 <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
-                <DialogContent className="max-w-sm"> {/* Nilagyan ng max-width */}
+                <DialogContent className="max-w-sm w-[90vw]">
                   <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
-                  {/* Dito ang sekreto: break-words at w-full sa loob ng max-width dialog */}
-                  <p className="text-sm p-4 bg-slate-50 rounded border break-words whitespace-pre-wrap w-full">
+                  {/* Paggamit ng break-all para sigurado */}
+                  <p className="text-sm p-4 bg-slate-50 rounded border break-all w-full overflow-hidden" style={{ wordBreak: 'break-all' }}>
                     {b.notes || "No remarks."}
                   </p>
                 </DialogContent>
@@ -111,7 +112,6 @@ export default function DocumentationPage() {
         ))}
       </div>
 
-      {/* FULL SCREEN PREVIEW */}
       {selectedIndex !== null && activeBranch && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-[110]">
