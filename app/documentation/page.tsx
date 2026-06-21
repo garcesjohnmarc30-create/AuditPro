@@ -58,7 +58,14 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
-              <Textarea placeholder="Add remarks" maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} />
+              {/* Added break-words to ensure text wraps */}
+              <Textarea 
+                placeholder="Add remarks" 
+                maxLength={500} 
+                value={notes} 
+                onChange={(e) => setNotes(e.target.value)} 
+                className="break-words whitespace-pre-wrap"
+              />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
           </DialogContent>
@@ -74,7 +81,10 @@ export default function DocumentationPage() {
                 <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
-                  <p className="text-sm p-4 bg-slate-50 rounded border whitespace-pre-wrap">{b.notes || "No remarks."}</p>
+                  {/* Added break-words and w-full to force downward wrapping */}
+                  <p className="text-sm p-4 bg-slate-50 rounded border whitespace-pre-wrap break-words w-full">
+                    {b.notes || "No remarks."}
+                  </p>
                 </DialogContent>
               </Dialog>
 
@@ -101,18 +111,14 @@ export default function DocumentationPage() {
         ))}
       </div>
 
-      {/* FULL SCREEN PREVIEW - Zero Background/Transparency, Top-Center Nav */}
+      {/* FULL SCREEN PREVIEW */}
       {selectedIndex !== null && activeBranch && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          
-          {/* Top-Center Navigation Group (Zero background) */}
           <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-[110]">
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft size={24} /></Button>
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setSelectedIndex(null)}><X size={24} /></Button>
             <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setSelectedIndex(prev => Math.min(activeBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight size={24} /></Button>
           </div>
-
-          {/* Main Image */}
           <img src={activeBranch.photos[selectedIndex]} className="max-h-[90vh] max-w-[90vw] object-contain" />
         </div>
       )}
