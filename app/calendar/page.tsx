@@ -29,6 +29,19 @@ export default function CalendarPage() {
     setFormData({ date: "", branch: "", status: "REGULAR", auditor: "" });
   };
 
+  // Helper para sa Color Coding
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case "SPECIAL":
+        return "bg-green-50 border-green-200 text-green-900";
+      case "CANCELLED":
+        return "bg-red-50 border-red-200 text-red-900";
+      case "REGULAR":
+      default:
+        return "bg-blue-50 border-blue-200 text-blue-900";
+    }
+  };
+
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart);
@@ -39,10 +52,7 @@ export default function CalendarPage() {
     <div className="p-8 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-center">Calendar Schedule</h1>
       
-      {/* FIXED NAVIGATION LAYOUT */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center mb-6">
-        
-        {/* KALIWA: ADD DATE */}
         <div className="justify-self-start">
           <Dialog>
             <DialogTrigger asChild><Button>+ ADD DATE</Button></DialogTrigger>
@@ -63,19 +73,16 @@ export default function CalendarPage() {
           </Dialog>
         </div>
 
-        {/* GITNA: JUNE 2026 */}
         <div className="justify-self-center">
           <h2 className="text-2xl font-bold w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
         </div>
 
-        {/* KANAN: PREV NEXT */}
         <div className="justify-self-end flex gap-2">
           <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}>Prev</Button>
           <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>Next</Button>
         </div>
       </div>
 
-      {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-px bg-zinc-200 border border-zinc-200 rounded-lg overflow-hidden shadow-lg">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div key={day} className="bg-zinc-100 p-2 text-center font-bold text-xs uppercase text-zinc-600">{day}</div>
@@ -92,10 +99,10 @@ export default function CalendarPage() {
               </span>
               <div className="mt-1 space-y-1">
                 {dayTrips.map((trip, i) => (
-                  <div key={i} className="text-[9px] bg-blue-50 border border-blue-200 p-1 rounded leading-tight">
-                    <p className="font-bold text-blue-900 truncate">{trip.branch}</p>
-                    <p className="text-[8px] uppercase text-blue-600">{trip.status}</p>
-                    <p className="font-medium text-zinc-500 truncate">{trip.auditor}</p>
+                  <div key={i} className={`p-1 rounded border ${getStatusStyles(trip.status)}`}>
+                    <p className="text-xs font-bold truncate leading-tight">{trip.branch}</p>
+                    <p className="text-[9px] uppercase font-semibold">{trip.status}</p>
+                    <p className="text-[9px] font-medium opacity-80 truncate">{trip.auditor}</p>
                   </div>
                 ))}
               </div>
