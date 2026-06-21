@@ -60,12 +60,12 @@ export default function DocumentationPage() {
               }} />
               {/* Added break-words to ensure text wraps */}
               <Textarea 
-                placeholder="Add remarks" 
-                maxLength={500} 
-                value={notes} 
-                onChange={(e) => setNotes(e.target.value)} 
-                className="break-words whitespace-pre-wrap"
-              />
+  placeholder="Add remarks" 
+  maxLength={500} 
+  value={notes} 
+  onChange={(e) => setNotes(e.target.value)} 
+  className="w-full h-32 resize-none overflow-y-auto break-words whitespace-pre-wrap"
+/>
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
           </DialogContent>
