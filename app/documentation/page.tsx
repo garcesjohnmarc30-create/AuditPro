@@ -111,30 +111,32 @@ export default function DocumentationPage() {
         ))}
       </div>
 
-      {/* FULL SCREEN PREVIEW OVERLAY - DITO ANG PAGBABAGO (White Background) */}
-      <Dialog open={selectedIndex !== null} onOpenChange={() => setSelectedIndex(null)}>
-        <DialogContent className="max-w-[90vw] w-[90vw] h-[90vh] p-4 bg-white border-none shadow-2xl flex flex-col items-center justify-center">
-          {selectedIndex !== null && previewBranch && (
-            <>
-              <div className="absolute left-4 z-50">
-                <Button variant="ghost" size="icon" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}>
-                  <ChevronLeft size={32} />
-                </Button>
-              </div>
-              
-              <div className="w-full h-full flex items-center justify-center overflow-hidden">
-                <img src={previewBranch.photos[selectedIndex]} className="max-w-full max-h-full object-contain" />
-              </div>
-
-              <div className="absolute right-4 z-50">
-                <Button variant="ghost" size="icon" onClick={() => setSelectedIndex(prev => Math.min(previewBranch.photos.length - 1, (prev || 0) + 1))}>
-                  <ChevronRight size={32} />
-                </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* FULL SCREEN PREVIEW OVERLAY - REVISED PARA SA 9:16 AT HORIZONTAL SCROLL */}
+<Dialog open={selectedIndex !== null} onOpenChange={() => setSelectedIndex(null)}>
+  <DialogContent className="max-w-[95vw] w-[95vw] h-[85vh] p-2 bg-white border border-slate-200 shadow-none flex flex-col items-center justify-start overflow-hidden">
+    {selectedIndex !== null && previewBranch && (
+      <>
+        {/* Header Title */}
+        <div className="w-full text-left font-bold text-lg mb-2">{previewBranch.name} - Gallery</div>
+        
+        {/* Container para sa 9:16 images na horizontal scroll */}
+        <div className="w-full h-full flex items-center overflow-x-auto gap-4 py-2">
+          {previewBranch.photos.map((photo, idx) => (
+            <div 
+              key={idx} 
+              className="flex-shrink-0 w-[40%] h-full flex items-center justify-center border rounded-md overflow-hidden bg-slate-50"
+            >
+              <img 
+                src={photo} 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+  </DialogContent>
+</Dialog>
     </div>
   );
 }
