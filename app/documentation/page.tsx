@@ -2,16 +2,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea"; // Siguraduhing installed ito sa shadcn
+import { Textarea } from "@/components/ui/textarea"; 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function DocumentationPage() {
-  // In-update ang type para isama ang 'notes'
   const [branches, setBranches] = useState<{ name: string; photos: string[]; notes: string }[]>([]);
   const [branchName, setBranchName] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
-  const [notes, setNotes] = useState(""); // Bagong state
+  const [notes, setNotes] = useState(""); 
   const [open, setOpen] = useState(false);
   const [activeBranch, setActiveBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -59,12 +58,11 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
-              {/* Bagong Textarea para sa Notes */}
               <Textarea 
                 placeholder="Add remarks (max 500 characters)" 
                 maxLength={500} 
                 value={notes} 
-                onChange={(e) => setNotes(e.target.value)} 
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)} 
               />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
@@ -77,35 +75,40 @@ export default function DocumentationPage() {
           <div key={i} className="flex items-center justify-between px-2 py-2 border-b hover:bg-slate-50">
             <span className="font-semibold text-sm text-slate-700">{b.name}</span>
             <div className="flex gap-2 items-center">
-              {/* Button para buksan ang View na may Notes sa kanan */}
+              
+              {/* NOTE BUTTON SA LABAS */}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setActiveBranch(b)}>
+                  <Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Remarks for {b.name}</DialogTitle></DialogHeader>
+                  <p className="text-sm text-slate-700 p-4 bg-slate-50 rounded border whitespace-pre-wrap">{b.notes || "No remarks added."}</p>
+                </DialogContent>
+              </Dialog>
+
+              {/* VIEW BUTTON */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 text-xs px-2">
                     VIEW {b.photos?.length || 0}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[90vw] h-[80vh]">
-                  <div className="flex gap-6 h-full">
-                    {/* Gallery sa Kaliwa */}
-                    <div className="w-2/3 overflow-y-auto grid grid-cols-2 gap-2">
-                      {b.photos.map((photo, idx) => (
-                        <img key={idx} src={photo} className="w-full h-32 object-cover rounded cursor-pointer" onClick={() => setSelectedIndex(idx)} />
-                      ))}
-                    </div>
-                    {/* Notes sa Kanan */}
-                    <div className="w-1/3 border-l pl-4">
-                      <h3 className="font-bold mb-2">NOTES</h3>
-                      <p className="text-sm text-slate-600 whitespace-pre-wrap">{b.notes || "No remarks."}</p>
-                    </div>
+                <DialogContent className="max-w-[80vw] h-[80vh]">
+                  <DialogHeader><DialogTitle>{b.name} - Gallery</DialogTitle></DialogHeader>
+                  <div className="grid grid-cols-4 gap-2 overflow-y-auto">
+                    {b.photos.map((photo, idx) => (
+                      <img key={idx} src={photo} className="w-full h-32 object-cover rounded cursor-pointer" onClick={() => setSelectedIndex(idx)} />
+                    ))}
                   </div>
                 </DialogContent>
               </Dialog>
+
               <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(i)}><Trash2 size={14} /></Button>
             </div>
           </div>
         ))}
       </div>
-      {/* ... (Keep your existing Full Screen Preview logic here) ... */}
     </div>
   );
 }
