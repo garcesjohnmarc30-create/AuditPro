@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState, useEffect, useMemo, useRef } from "react"; // 1. Dagdag: useRef
+import { useState, useEffect, useMemo, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -26,8 +26,8 @@ export interface Trip {
 
 export default function TripTicketsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [searchQuery, setSearchQuery] = useState(""); // 2. Dagdag: State para sa search
-  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({}); // 3. Dagdag: Refs para sa scroll
+  const [searchQuery, setSearchQuery] = useState("");
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
   
   const [newTrip, setNewTrip] = useState({ 
     branch: "", startDate: "", endDate: "", auditor: "MARC",
@@ -35,7 +35,6 @@ export default function TripTicketsPage() {
     status: "Complete" as "Complete" | "Lack" 
   });
 
-  // 4. Dagdag: Logic para sa Search at Auto-scroll
   const handleSearch = (value: string) => {
     setSearchQuery(value);
     const foundTrip = trips.find(t => t.branch.toLowerCase() === value.toLowerCase());
@@ -92,22 +91,24 @@ export default function TripTicketsPage() {
 
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
-      <h1 className="text-2xl font-bold text-zinc-900 mb-6">Trip Tickets Overview</h1>
+      <div className="border-b border-zinc-200 pb-6 mb-6">
+        <h1 className="text-2xl font-bold text-zinc-900">Trip Tickets Overview</h1>
+        <p className="text-zinc-500 text-sm">Manage and monitor all audit branch assignments.</p>
+      </div>
       
       <div className="flex gap-4 mb-6">
         {[{l: "Branches", v: stats.totalBranches, c: "text-green-600"}, {l: "Present", v: stats.present, c: "text-blue-500"}, {l: "Absent", v: stats.absent, c: "text-red-500"}].map((s, i) => (
-          <div key={i} className="bg-white p-5 rounded-xl border shadow-sm w-48">
+          <div key={i} className="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm w-48">
             <p className="text-xs text-zinc-500 font-bold uppercase">{s.l}</p>
             <p className={`text-3xl font-bold ${s.c}`}>{s.v}</p>
           </div>
         ))}
       </div>
 
-      {/* 5. Dito inilagay ang Search Bar sa tabi ng button */}
       <div className="mb-6 flex gap-2">
         <Input 
           placeholder="Search branch..." 
-          className="max-w-xs" 
+          className="max-w-xs bg-white" 
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)} 
         />
@@ -146,37 +147,42 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
+      {/* DITO ANG UPDATED TABLE STYLING */}
+      <div className="rounded-xl border border-blue-600 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Branch</TableHead>
-              <TableHead>Auditor</TableHead>
-              <TableHead>Date Range</TableHead>
-              <TableHead>Staff</TableHead>
-              <TableHead></TableHead>
+          <TableHeader className="bg-blue-600">
+            <TableRow className="hover:bg-blue-600 border-b border-blue-700">
+              <TableHead className="text-white font-bold">Branch</TableHead>
+              <TableHead className="text-white font-bold">Auditor</TableHead>
+              <TableHead className="text-white font-bold">Date Range</TableHead>
+              <TableHead className="text-white font-bold">Staff</TableHead>
+              <TableHead className="text-white font-bold text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {/* 6. Filter logic dito */}
             {trips.filter(t => t.branch.toLowerCase().includes(searchQuery.toLowerCase())).map((trip) => (
               <TableRow 
                 key={trip.id} 
-                ref={(el) => { rowRefs.current[trip.id] = el; }} // Nilagyan ng ref
+                ref={(el) => { rowRefs.current[trip.id] = el; }}
+                className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
               >
-                <TableCell className="font-medium">{trip.branch}</TableCell>
+                <TableCell className="font-medium text-zinc-900">{trip.branch}</TableCell>
                 <TableCell className="font-semibold text-zinc-600">{trip.auditor || "N/A"}</TableCell>
                 <TableCell className="text-zinc-500 text-sm">{trip.startDate} - {trip.endDate}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {trip.staff.map((member, i) => (
-                      <span key={i} className={cn("px-2 py-1 rounded text-[10px] font-bold text-white", member.isPresent ? "bg-blue-400" : "bg-red-500")}>
+                      <span key={i} className={cn("px-2 py-1 rounded text-[10px] font-bold text-white", member.isPresent ? "bg-blue-500" : "bg-red-500")}>
                         {member.name}
                       </span>
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-right"><Button variant="ghost" className="text-red-500" onClick={() => deleteTrip(trip.id)}>Remove</Button></TableCell>
+                <TableCell className="text-right">
+                    <Button variant="ghost" className="text-red-500 hover:bg-red-50 hover:text-red-700 font-bold" onClick={() => deleteTrip(trip.id)}>
+                        Remove
+                    </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
