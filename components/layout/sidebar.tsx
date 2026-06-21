@@ -16,7 +16,7 @@ export default function Sidebar() {
         <h1 className="text-white text-2xl font-bold">AuditPro</h1>
       </div>
       
-      {/* Main Navigation (Dito ang Trip Tickets at Documentation) */}
+      {/* Main Navigation */}
       <nav className="flex-grow space-y-2">
         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4">Menu</p>
         
@@ -26,9 +26,13 @@ export default function Sidebar() {
         <Link href="/documentation" className={getLinkClass("/documentation")}>
           Documentation
         </Link>
+        {/* DITO NATIN IDINAGDAG ANG CALENDAR */}
+        <Link href="/calendar" className={getLinkClass("/calendar")}>
+          Calendar
+        </Link>
       </nav>
 
-      {/* Footer Navigation (Dito lang ang Profile sa ilalim) */}
+      {/* Footer Navigation */}
       <nav className="border-t border-slate-700 pt-4">
         <Link href="/profile" className={getLinkClass("/profile")}>
           Profile
