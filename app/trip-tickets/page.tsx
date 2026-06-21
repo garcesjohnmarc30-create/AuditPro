@@ -53,10 +53,18 @@ export default function TripTicketsPage() {
   }, []);
 
   const stats = useMemo(() => {
-    if (!trips || trips.length === 0) return { totalBranches: 0, present: 0, absent: 0 };
+    if (!trips || trips.length === 0) 
+      return { totalBranches: 0, present: 0, absent: 0, completeCount: 0, lackCount: 0 };
+      
     let present = 0;
     let absent = 0;
+    let completeCount = 0;
+    let lackCount = 0;
+
     trips.forEach(t => {
+      if (t.status === "Complete") completeCount++;
+      else if (t.status === "Lack") lackCount++;
+
       if (t.staff && Array.isArray(t.staff)) {
         t.staff.forEach(s => {
           if (s?.name && typeof s.name === 'string') {
@@ -65,7 +73,14 @@ export default function TripTicketsPage() {
         });
       }
     });
-    return { totalBranches: new Set(trips.map(t => t.branch)).size, present, absent };
+    
+    return { 
+      totalBranches: new Set(trips.map(t => t.branch)).size, 
+      present, 
+      absent,
+      completeCount,
+      lackCount
+    };
   }, [trips]);
 
   const addTrip = async () => {
@@ -89,6 +104,17 @@ export default function TripTicketsPage() {
     await deleteDoc(doc(db, "trips", id));
   };
 
+  // UPDATED: Date format sa "June 20, 2026"
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-US", { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric',
+      timeZone: 'UTC' 
+    });
+  };
+
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
       <div className="pb-6 mb-6">
@@ -97,9 +123,15 @@ export default function TripTicketsPage() {
       </div>
       
       <div className="flex gap-4 mb-6">
-        {[{l: "Branches", v: stats.totalBranches, c: "text-green-600"}, {l: "Present", v: stats.present, c: "text-blue-500"}, {l: "Absent", v: stats.absent, c: "text-red-500"}].map((s, i) => (
+        {[
+          {l: "Branches", v: stats.totalBranches, c: "text-zinc-900"}, 
+          {l: "Present", v: stats.present, c: "text-blue-500"}, 
+          {l: "Absent", v: stats.absent, c: "text-red-500"},
+          {l: "Complete Staff", v: stats.completeCount, c: "text-green-600"},
+          {l: "Lack of Staff", v: stats.lackCount, c: "text-red-600"}
+        ].map((s, i) => (
           <div key={i} className="bg-white p-5 rounded-xl border border-zinc-100 shadow-sm w-48">
-            <p className="text-xs text-zinc-500 font-bold uppercase">{s.l}</p>
+            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{s.l}</p>
             <p className={`text-3xl font-bold ${s.c}`}>{s.v}</p>
           </div>
         ))}
@@ -147,15 +179,15 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
-      {/* Tinanggal ang border classes sa container */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-none">
-              <TableHead className="text-zinc-500">Branch</TableHead>
-              <TableHead className="text-zinc-500">Auditor</TableHead>
-              <TableHead className="text-zinc-500">Date Range</TableHead>
-              <TableHead className="text-zinc-500">Staff</TableHead>
+              <TableHead className="text-zinc-900 font-bold">Branch</TableHead>
+              <TableHead className="text-zinc-900 font-bold">Auditor</TableHead>
+              <TableHead className="text-zinc-900 font-bold">Date Range</TableHead>
+              <TableHead className="text-zinc-900 font-bold">Status</TableHead>
+              <TableHead className="text-zinc-900 font-bold">Staff</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -168,7 +200,19 @@ export default function TripTicketsPage() {
               >
                 <TableCell className="font-medium text-zinc-900">{trip.branch}</TableCell>
                 <TableCell className="font-semibold text-zinc-600">{trip.auditor || "N/A"}</TableCell>
-                <TableCell className="text-zinc-500 text-sm">{trip.startDate} - {trip.endDate}</TableCell>
+                <TableCell className="text-zinc-500 text-sm">
+                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                </TableCell>
+                <TableCell>
+                  <span className={cn(
+                    "text-[10px] font-bold px-2 py-1 rounded-full", 
+                    trip.status === "Complete" 
+                      ? "bg-green-100 text-green-700" 
+                      : "bg-red-100 text-red-700"
+                  )}>
+                    {trip.status === "Complete" ? "COMPLETE" : "LACK OF STAFF"}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {trip.staff.map((member, i) => (
