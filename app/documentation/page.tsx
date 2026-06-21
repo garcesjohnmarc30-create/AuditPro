@@ -15,6 +15,10 @@ export default function DocumentationPage() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [activeBranch, setActiveBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
 
+  // MGA BAGONG STATE PARA SA EDITING
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editRemarks, setEditRemarks] = useState("");
+
   useEffect(() => {
     const saved = localStorage.getItem("myBranches");
     if (saved) {
@@ -30,6 +34,15 @@ export default function DocumentationPage() {
       localStorage.setItem("myBranches", JSON.stringify(updated));
       setBranchName(""); setPhotos([]); setNotes(""); setOpen(false);
     }
+  };
+
+  // BAGONG FUNCTION PARA SA PAG-SAVE NG EDIT
+  const handleEditSave = (index: number) => {
+    const updated = [...branches];
+    updated[index].notes = editRemarks;
+    setBranches(updated);
+    localStorage.setItem("myBranches", JSON.stringify(updated));
+    setEditingIndex(null);
   };
 
   const handleDelete = (indexToDelete: number) => {
@@ -58,7 +71,6 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
-              {/* Force wrap gamit ang break-all */}
               <Textarea 
                 placeholder="Add remarks" 
                 maxLength={500} 
@@ -78,14 +90,37 @@ export default function DocumentationPage() {
           <div key={i} className="flex items-center justify-between px-2 py-2 border-b hover:bg-slate-50">
             <span className="font-semibold text-sm text-slate-700">{b.name}</span>
             <div className="flex gap-2 items-center">
-              <Dialog>
+              {/* REVISED NOTE DIALOG */}
+              <Dialog onOpenChange={(isOpen) => !isOpen && setEditingIndex(null)}>
                 <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
                 <DialogContent className="max-w-sm w-[90vw]">
                   <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
-                  {/* Paggamit ng break-all para sigurado */}
-                  <p className="text-sm p-4 bg-slate-50 rounded border break-all w-full overflow-hidden" style={{ wordBreak: 'break-all' }}>
-                    {b.notes || "No remarks."}
-                  </p>
+                  
+                  {editingIndex === i ? (
+                    <div className="space-y-4">
+                      <Textarea 
+                        value={editRemarks} 
+                        onChange={(e) => setEditRemarks(e.target.value)}
+                        className="w-full resize-none break-all"
+                        style={{ wordBreak: 'break-all' }}
+                      />
+                      <Button onClick={() => handleEditSave(i)} className="w-full">Save Changes</Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-sm p-4 bg-slate-50 rounded border break-all w-full overflow-hidden" style={{ wordBreak: 'break-all' }}>
+                        {b.notes || "No remarks."}
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => { setEditingIndex(i); setEditRemarks(b.notes); }} 
+                        className="w-full"
+                      >
+                        Edit Remarks
+                      </Button>
+                    </div>
+                  )}
                 </DialogContent>
               </Dialog>
 
