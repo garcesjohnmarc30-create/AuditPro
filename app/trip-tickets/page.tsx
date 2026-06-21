@@ -91,11 +91,13 @@ export default function TripTicketsPage() {
 
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
+      {/* HEADER SECTION - Consistent sa Calendar */}
       <div className="border-b border-zinc-200 pb-6 mb-6">
         <h1 className="text-2xl font-bold text-zinc-900">Trip Tickets Overview</h1>
         <p className="text-zinc-500 text-sm">Manage and monitor all audit branch assignments.</p>
       </div>
       
+      {/* STATS CARDS */}
       <div className="flex gap-4 mb-6">
         {[{l: "Branches", v: stats.totalBranches, c: "text-green-600"}, {l: "Present", v: stats.present, c: "text-blue-500"}, {l: "Absent", v: stats.absent, c: "text-red-500"}].map((s, i) => (
           <div key={i} className="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm w-48">
@@ -147,16 +149,16 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
-      {/* DITO ANG UPDATED TABLE STYLING */}
-      <div className="rounded-xl border border-blue-600 bg-white shadow-sm overflow-hidden">
+      {/* TABLE CONTAINER - May Border at Shadow */}
+      <div className="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-blue-600">
-            <TableRow className="hover:bg-blue-600 border-b border-blue-700">
-              <TableHead className="text-white font-bold">Branch</TableHead>
-              <TableHead className="text-white font-bold">Auditor</TableHead>
-              <TableHead className="text-white font-bold">Date Range</TableHead>
-              <TableHead className="text-white font-bold">Staff</TableHead>
-              <TableHead className="text-white font-bold text-right">Action</TableHead>
+          <TableHeader className="bg-zinc-50">
+            <TableRow>
+              <TableHead>Branch</TableHead>
+              <TableHead>Auditor</TableHead>
+              <TableHead>Date Range</TableHead>
+              <TableHead>Staff</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -164,7 +166,6 @@ export default function TripTicketsPage() {
               <TableRow 
                 key={trip.id} 
                 ref={(el) => { rowRefs.current[trip.id] = el; }}
-                className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
               >
                 <TableCell className="font-medium text-zinc-900">{trip.branch}</TableCell>
                 <TableCell className="font-semibold text-zinc-600">{trip.auditor || "N/A"}</TableCell>
@@ -178,11 +179,7 @@ export default function TripTicketsPage() {
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-right">
-                    <Button variant="ghost" className="text-red-500 hover:bg-red-50 hover:text-red-700 font-bold" onClick={() => deleteTrip(trip.id)}>
-                        Remove
-                    </Button>
-                </TableCell>
+                <TableCell className="text-right"><Button variant="ghost" className="text-red-500 hover:text-red-700" onClick={() => deleteTrip(trip.id)}>Remove</Button></TableCell>
               </TableRow>
             ))}
           </TableBody>

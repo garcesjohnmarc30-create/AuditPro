@@ -1,10 +1,11 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 export default function DocumentationPage() {
   const [branches, setBranches] = useState<{ name: string; photos: string[]; notes: string }[]>([]);
@@ -14,8 +15,6 @@ export default function DocumentationPage() {
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [activeBranch, setActiveBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
-
-  // MGA BAGONG STATE PARA SA EDITING
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editRemarks, setEditRemarks] = useState("");
 
@@ -36,7 +35,6 @@ export default function DocumentationPage() {
     }
   };
 
-  // BAGONG FUNCTION PARA SA PAG-SAVE NG EDIT
   const handleEditSave = (index: number) => {
     const updated = [...branches];
     updated[index].notes = editRemarks;
@@ -71,92 +69,90 @@ export default function DocumentationPage() {
                   }))).then(setPhotos);
                 }
               }} />
-              <Textarea 
-                placeholder="Add remarks" 
-                maxLength={500} 
-                value={notes} 
-                onChange={(e) => setNotes(e.target.value)} 
-                className="w-full resize-none break-all"
-                style={{ wordBreak: 'break-all' }}
-              />
+              <Textarea placeholder="Add remarks" maxLength={500} value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full resize-none" />
               <Button onClick={handleSave} className="w-full">Save Branch</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="border-t pt-4">
+      <div className="pt-4 border-t border-slate-200">
         {branches.map((b, i) => (
-          <div key={i} className="flex items-center justify-between px-2 py-2 border-b hover:bg-slate-50">
+          <div key={i} className="flex items-center justify-between px-2 py-3 border-b border-slate-200 hover:bg-slate-50">
             <span className="font-semibold text-sm text-slate-700">{b.name}</span>
             <div className="flex gap-2 items-center">
-              {/* REVISED NOTE DIALOG */}
+              
               <Dialog onOpenChange={(isOpen) => !isOpen && setEditingIndex(null)}>
-                <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2">NOTE</Button></DialogTrigger>
-                <DialogContent className="max-w-sm w-[90vw]">
-                  <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
-                  
-                  {editingIndex === i ? (
-                    <div className="space-y-4">
-                      <Textarea 
-                        value={editRemarks} 
-                        onChange={(e) => setEditRemarks(e.target.value)}
-                        className="w-full resize-none break-all"
-                        style={{ wordBreak: 'break-all' }}
-                      />
-                      <Button onClick={() => handleEditSave(i)} className="w-full">Save Changes</Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <p className="text-sm p-4 bg-slate-50 rounded border break-all w-full overflow-hidden" style={{ wordBreak: 'break-all' }}>
-                        {b.notes || "No remarks."}
-                      </p>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => { setEditingIndex(i); setEditRemarks(b.notes); }} 
-                        className="w-full"
-                      >
-                        Edit Remarks
-                      </Button>
-                    </div>
-                  )}
-                </DialogContent>
-              </Dialog>
+  <DialogTrigger asChild><Button variant="secondary" size="sm" className="h-7 text-xs px-2 border border-blue-500">NOTE</Button></DialogTrigger>
+  
+  {/* Dito ang fix: Dagdagan ng flex flex-col para manatili ang button sa ilalim */}
+  <DialogContent className="w-[90vw] max-w-sm border-2 border-blue-500 p-6 flex flex-col">
+    <DialogHeader><DialogTitle>Remarks</DialogTitle></DialogHeader>
+    
+    {editingIndex === i ? (
+      <div className="space-y-4 w-full">
+        <Textarea 
+          value={editRemarks} 
+          onChange={(e) => setEditRemarks(e.target.value)} 
+          className="w-full min-h-[100px] border-blue-500" 
+        />
+        <Button onClick={() => handleEditSave(i)} className="w-full">Save Changes</Button>
+      </div>
+    ) : (
+      <div className="space-y-4 w-full">
+        {/* Dito ang fix: min-w-0 para gumana ang wrapping sa loob ng flex container */}
+        <p className="p-4 bg-slate-50 rounded border border-blue-500 text-sm break-words whitespace-pre-wrap min-w-0 w-full">
+          {b.notes || "No remarks."}
+        </p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => { setEditingIndex(i); setEditRemarks(b.notes); }} 
+          className="w-full border-blue-500"
+        >
+          Edit Remarks
+        </Button>
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 text-xs px-2" onClick={() => setActiveBranch(b)}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs px-2 border-blue-500" onClick={() => { setActiveBranch(b); setSelectedIndex(0); }}>
                     VIEW {b.photos?.length || 0}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[95vw] h-[50vh]">
-                  <DialogHeader><DialogTitle>{b.name} - Gallery</DialogTitle></DialogHeader>
-                  <div className="flex gap-4 overflow-x-auto py-4 h-full">
-                    {b.photos.map((photo, idx) => (
-                      <div key={idx} className="flex-shrink-0 w-[120px] h-full cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setSelectedIndex(idx)}>
-                        <img src={photo} className="w-full h-full object-cover rounded border" />
-                      </div>
+                
+                <DialogContent className="max-w-[500px] w-[90vw] border-2 border-blue-500 p-6">
+                  <DialogHeader>
+                    <DialogTitle>{activeBranch?.name} - Gallery</DialogTitle>
+                  </DialogHeader>
+                  
+                  {selectedIndex !== null && activeBranch?.photos[selectedIndex] && (
+                    <div className="mb-4">
+                      <img src={activeBranch.photos[selectedIndex]} className="w-full h-64 object-contain rounded border-2 border-blue-500 bg-slate-100" />
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 overflow-x-auto py-2 border-y-2 border-blue-500">
+                    {activeBranch?.photos.map((photo, idx) => (
+                      <img key={idx} src={photo} className={`w-16 h-16 object-cover rounded cursor-pointer border-2 ${selectedIndex === idx ? "border-blue-600" : "border-blue-500"}`} onClick={() => setSelectedIndex(idx)} />
                     ))}
+                  </div>
+
+                  <div className="flex justify-between mt-4 pt-4">
+                    <Button variant="outline" size="sm" className="border-blue-500" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(p => (p !== null ? p - 1 : 0))}>Prev</Button>
+                    <Button variant="outline" size="sm" className="border-blue-500" disabled={selectedIndex === (activeBranch?.photos.length || 1) - 1} onClick={() => setSelectedIndex(p => (p !== null ? p + 1 : 0))}>Next</Button>
                   </div>
                 </DialogContent>
               </Dialog>
+              
               <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(i)}><Trash2 size={14} /></Button>
             </div>
           </div>
         ))}
       </div>
-
-      {selectedIndex !== null && activeBranch && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-[110]">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setSelectedIndex(prev => Math.max(0, (prev || 0) - 1))}><ChevronLeft size={24} /></Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setSelectedIndex(null)}><X size={24} /></Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setSelectedIndex(prev => Math.min(activeBranch.photos.length - 1, (prev || 0) + 1))}><ChevronRight size={24} /></Button>
-          </div>
-          <img src={activeBranch.photos[selectedIndex]} className="max-h-[90vh] max-w-[90vw] object-contain" />
-        </div>
-      )}
     </div>
   );
 }
