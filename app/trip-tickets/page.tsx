@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react"; // 1. Dagdag: useRef
 import { db } from "@/lib/firebase";
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -20,25 +20,34 @@ export interface Trip {
   startDate: string;
   endDate: string;
   staff: StaffMember[];
-  auditor: string; // Bagong field
+  auditor: string;
   status: "Complete" | "Lack";
 }
 
 export default function TripTicketsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [searchQuery, setSearchQuery] = useState(""); // 2. Dagdag: State para sa search
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({}); // 3. Dagdag: Refs para sa scroll
+  
   const [newTrip, setNewTrip] = useState({ 
     branch: "", startDate: "", endDate: "", auditor: "MARC",
     staff: Array(4).fill({ name: "", isPresent: true }),
     status: "Complete" as "Complete" | "Lack" 
   });
 
+  // 4. Dagdag: Logic para sa Search at Auto-scroll
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    const foundTrip = trips.find(t => t.branch.toLowerCase() === value.toLowerCase());
+    if (foundTrip && rowRefs.current[foundTrip.id]) {
+      rowRefs.current[foundTrip.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
   useEffect(() => {
     const q = query(collection(db, "trips"), orderBy("startDate", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tripsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Trip[];
+      const tripsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Trip[];
       setTrips(tripsData);
     });
     return () => unsubscribe();
@@ -67,7 +76,7 @@ export default function TripTicketsPage() {
         branch: newTrip.branch,
         startDate: newTrip.startDate,
         endDate: newTrip.endDate,
-        auditor: newTrip.auditor, // Save Auditor
+        auditor: newTrip.auditor,
         staff: newTrip.staff.filter(s => s.name.trim() !== ""),
         status: newTrip.status
       });
@@ -85,7 +94,6 @@ export default function TripTicketsPage() {
     <div className="p-8 bg-zinc-50 min-h-screen">
       <h1 className="text-2xl font-bold text-zinc-900 mb-6">Trip Tickets Overview</h1>
       
-      {/* Stats Section */}
       <div className="flex gap-4 mb-6">
         {[{l: "Branches", v: stats.totalBranches, c: "text-green-600"}, {l: "Present", v: stats.present, c: "text-blue-500"}, {l: "Absent", v: stats.absent, c: "text-red-500"}].map((s, i) => (
           <div key={i} className="bg-white p-5 rounded-xl border shadow-sm w-48">
@@ -95,8 +103,14 @@ export default function TripTicketsPage() {
         ))}
       </div>
 
-      {/* Add New Trip Modal */}
-      <div className="mb-6">
+      {/* 5. Dito inilagay ang Search Bar sa tabi ng button */}
+      <div className="mb-6 flex gap-2">
+        <Input 
+          placeholder="Search branch..." 
+          className="max-w-xs" 
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)} 
+        />
         <Dialog>
           <DialogTrigger asChild><Button>+ New Ticket</Button></DialogTrigger>
           <DialogContent>
@@ -132,7 +146,6 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
-      {/* Trips Table */}
       <div className="rounded-xl border bg-white shadow-sm">
         <Table>
           <TableHeader>
@@ -145,8 +158,12 @@ export default function TripTicketsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trips.map((trip) => (
-              <TableRow key={trip.id}>
+            {/* 6. Filter logic dito */}
+            {trips.filter(t => t.branch.toLowerCase().includes(searchQuery.toLowerCase())).map((trip) => (
+              <TableRow 
+                key={trip.id} 
+                ref={(el) => { rowRefs.current[trip.id] = el; }} // Nilagyan ng ref
+              >
                 <TableCell className="font-medium">{trip.branch}</TableCell>
                 <TableCell className="font-semibold text-zinc-600">{trip.auditor || "N/A"}</TableCell>
                 <TableCell className="text-zinc-500 text-sm">{trip.startDate} - {trip.endDate}</TableCell>
