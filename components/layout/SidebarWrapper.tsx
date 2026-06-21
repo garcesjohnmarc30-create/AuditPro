@@ -10,32 +10,37 @@ export default function SidebarWrapper({ children }: { children: React.ReactNode
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar - Dito natin ilalagay ang button sa loob ng blue area */}
+      {/* SIDEBAR AREA (Blue) */}
       {isOpen && (
-        <div className="w-64 border-r bg-slate-900 text-white z-20 flex flex-col">
-          {/* Header sa loob ng Sidebar */}
-          <div className="p-4 flex items-center justify-between">
+        <div className="w-64 bg-slate-900 text-white z-20 flex flex-col transition-all">
+          
+          {/* HEADER DITO - DITO NATIN ILALAGAY ANG BUTTON */}
+          <div className="p-6 flex items-center justify-between">
             <h1 className="text-xl font-bold">AuditPro</h1>
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setIsOpen(false)}
               className="text-white hover:bg-slate-700"
             >
               <Menu className="h-6 w-6" />
             </Button>
           </div>
-          <Sidebar />
+
+          <div className="flex-1">
+            <Sidebar />
+          </div>
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-auto">
-        {/* Tinanggal na natin ang header dito para hindi na magdoble */}
+      {/* MAIN CONTENT AREA */}
+      <main className={`flex-1 flex flex-col h-full overflow-auto bg-gray-50 transition-all`}>
+        {/* BUTTON SA TAAS KUNG SARADO ANG SIDEBAR */}
         {!isOpen && (
-          <header className="h-16 border-b flex items-center px-6">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-              <Menu className="h-6 w-6" />
+          // Tinanggal natin ang 'border-b' class dito sa header
+          <header className="h-16 flex items-center px-6 bg-white">
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
+              <Menu className="h-6 w-6 text-slate-900" />
             </Button>
           </header>
         )}

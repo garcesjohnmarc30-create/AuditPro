@@ -10,11 +10,13 @@ export default function Sidebar() {
     `block text-white transition py-2 px-3 rounded-lg ${pathname === path ? "bg-blue-600" : "hover:bg-slate-800"}`;
 
   return (
-    <div className="fixed left-0 top-0 h-screen z-50 bg-[#0f172a] p-6 w-64 flex flex-col">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-white text-2xl font-bold">AuditPro</h1>
-      </div>
+    // Inalis natin ang "fixed left-0 top-0 h-screen w-64 bg-[#0f172a]" 
+    // para hindi ito sumalungat sa SidebarWrapper
+    <div className="h-full bg-[#0f172a] p-6 flex flex-col">
+      
+      {/* TINANGGAL NATIN DITO ANG "AuditPro" HEADER 
+          dahil inilipat na natin ito sa SidebarWrapper.tsx 
+          para hindi magdoble sa UI. */}
       
       {/* Main Navigation */}
       <nav className="flex-grow space-y-2">
@@ -26,7 +28,6 @@ export default function Sidebar() {
         <Link href="/documentation" className={getLinkClass("/documentation")}>
           Documentation
         </Link>
-        {/* DITO NATIN IDINAGDAG ANG CALENDAR */}
         <Link href="/calendar" className={getLinkClass("/calendar")}>
           Calendar
         </Link>
