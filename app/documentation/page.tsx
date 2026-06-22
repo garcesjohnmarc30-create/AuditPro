@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, Maximize2, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function DocumentationPage() {
   const [branches, setBranches] = useState<{ name: string; photos: string[]; notes: string }[]>([]);
@@ -17,6 +17,7 @@ export default function DocumentationPage() {
   const [activeBranch, setActiveBranch] = useState<{name: string, photos: string[], notes: string} | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editRemarks, setEditRemarks] = useState("");
+  const [fullScreen, setFullScreen] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("myBranches");
@@ -111,13 +112,19 @@ export default function DocumentationPage() {
                 <DialogContent className="max-w-[500px] w-[90vw] p-6">
                   <DialogHeader><DialogTitle>{activeBranch?.name} - Gallery</DialogTitle></DialogHeader>
                   {selectedIndex !== null && activeBranch?.photos[selectedIndex] && (
-                    <div className="mb-4">
+                    <div className="mb-4 relative group">
                       <img src={activeBranch.photos[selectedIndex]} className="w-full h-64 object-contain rounded bg-slate-100" />
+                      <button 
+                        onClick={() => setFullScreen(activeBranch.photos[selectedIndex!])}
+                        className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Maximize2 size={16} />
+                      </button>
                     </div>
                   )}
                   <div className="flex gap-2 overflow-x-auto py-2">
                     {activeBranch?.photos.map((photo, idx) => (
-                      <img key={idx} src={photo} className={`w-16 h-16 object-cover rounded cursor-pointer ${selectedIndex === idx ? "opacity-100" : "opacity-50"}`} onClick={() => setSelectedIndex(idx)} />
+                      <img key={idx} src={photo} className={`w-16 h-16 object-cover rounded cursor-pointer ${selectedIndex === idx ? "opacity-100 border-2 border-black" : "opacity-50"}`} onClick={() => setSelectedIndex(idx)} />
                     ))}
                   </div>
                   <div className="flex justify-between mt-4 pt-4">
@@ -132,6 +139,55 @@ export default function DocumentationPage() {
           </div>
         ))}
       </div>
+
+      {/* Transparent Full Screen Lightbox */}
+      <Dialog open={!!fullScreen} onOpenChange={(open) => !open && setFullScreen(null)}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex items-center justify-center p-0 border-none bg-transparent shadow-none [&>button]:hidden">
+          {/* Custom Close Button */}
+          <button
+            onClick={() => setFullScreen(null)}
+            className="absolute top-4 right-4 z-50 p-2 bg-black/50 text-white rounded-full hover:bg-black/70"
+          >
+            <X size={20} />
+          </button>
+          
+          {/* Left Navigation */}
+          <button 
+            className="absolute left-4 z-50 p-3 bg-black/30 text-white rounded-full hover:bg-black/50"
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentIndex = activeBranch?.photos.indexOf(fullScreen!);
+              if (currentIndex !== undefined && currentIndex > 0) {
+                setFullScreen(activeBranch!.photos[currentIndex - 1]);
+              }
+            }}
+          >
+            <ChevronLeft size={32} />
+          </button>
+
+          {/* Main Image */}
+          {fullScreen && (
+            <img 
+              src={fullScreen} 
+              className="max-h-full max-w-[80%] object-contain" 
+            />
+          )}
+
+          {/* Right Navigation */}
+          <button 
+            className="absolute right-4 z-50 p-3 bg-black/30 text-white rounded-full hover:bg-black/50"
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentIndex = activeBranch?.photos.indexOf(fullScreen!);
+              if (currentIndex !== undefined && currentIndex < (activeBranch?.photos.length || 1) - 1) {
+                setFullScreen(activeBranch!.photos[currentIndex + 1]);
+              }
+            }}
+          >
+            <ChevronRight size={32} />
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
