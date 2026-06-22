@@ -17,10 +17,7 @@ export default function Sidebar() {
         <Link href="/trip-tickets" className={getLinkClass("/trip-tickets")}>
           Trip Tickets
         </Link>
-        <Link href="/documentation" className={getLinkClass("/documentation")}>
-          Documentation
-        </Link>
-        <Link href="/calendar" className={getLinkClass("/calendar")}>
+          <Link href="/calendar" className={getLinkClass("/calendar")}>
           Calendar
         </Link>
       </nav>
