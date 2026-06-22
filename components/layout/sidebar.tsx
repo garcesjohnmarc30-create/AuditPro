@@ -15,7 +15,6 @@ export default function Sidebar() {
   return (
     <div className="h-full w-64 bg-[#0f172a] p-6 flex flex-col border-r border-slate-700">
       <div className="mb-8">
-        <h1 className="text-white font-black text-xl tracking-tighter">EXPENSE HUB</h1>
       </div>
 
       <nav className="flex-grow space-y-2">
