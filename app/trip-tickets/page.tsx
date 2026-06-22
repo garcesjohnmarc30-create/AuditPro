@@ -21,7 +21,7 @@ export interface Trip {
   endDate: string;
   staff: StaffMember[];
   auditor: string;
-  status: "Complete" | "Lack";
+  status: string;
 }
 
 export default function TripTicketsPage() {
@@ -31,19 +31,22 @@ export default function TripTicketsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const initialTripState = { 
-    branch: "", startDate: "", endDate: "", auditor: "MARC",
+    branch: "", 
+    startDate: "", 
+    endDate: "", 
+    auditor: "MARC",
     staff: Array(5).fill({ name: "", isPresent: true }),
-    status: "Complete" as "Complete" | "Lack" 
+    status: "Complete"
   };
 
   const [newTrip, setNewTrip] = useState(initialTripState);
 
   const analytics = {
     branches: trips.length,
-    present: trips.flatMap(t => t.staff).filter(s => s.isPresent).length,
-    absent: trips.flatMap(t => t.staff).filter(s => !s.isPresent).length,
+    present: trips.flatMap(t => t.staff || []).filter(s => s.isPresent).length,
+    absent: trips.flatMap(t => t.staff || []).filter(s => !s.isPresent).length,
     completeStaff: trips.filter(t => t.status === "Complete").length,
-    lackStaff: trips.filter(t => t.status === "Lack").length,
+    incompleteStaff: trips.filter(t => t.status !== "Complete").length,
   };
 
   useEffect(() => {
@@ -63,8 +66,9 @@ export default function TripTicketsPage() {
         startDate: newTrip.startDate,
         endDate: newTrip.endDate,
         auditor: newTrip.auditor,
-        staff: newTrip.staff.filter(s => s.name.trim() !== ""),
-        status: newTrip.status
+        // Sinave ang buong array para manatili ang 5 slots
+        staff: newTrip.staff, 
+        status: newTrip.status 
       };
 
       if (editingId) {
@@ -94,14 +98,13 @@ export default function TripTicketsPage() {
       <h1 className="text-2xl font-bold text-zinc-900 mb-2">Trip Tickets Overview</h1>
       <p className="text-zinc-500 mb-6">Manage and monitor all audit branch assignments.</p>
 
-      {/* ANALYTICS SECTION */}
       <div className="flex flex-row gap-8 mb-8">
         {[
           { label: "BRANCHES", val: analytics.branches, color: "text-zinc-900" },
           { label: "PRESENT", val: analytics.present, color: "text-blue-500" },
           { label: "ABSENT", val: analytics.absent, color: "text-red-500" },
           { label: "COMPLETE STAFF", val: analytics.completeStaff, color: "text-green-600" },
-          { label: "LACK OF STAFF", val: analytics.lackStaff, color: "text-red-600" },
+          { label: "INCOMPLETE", val: analytics.incompleteStaff, color: "text-red-600" },
         ].map((item, i) => (
           <div key={i} className="flex-1">
             <div className="text-[10px] font-bold text-zinc-500">{item.label}</div>
@@ -128,17 +131,22 @@ export default function TripTicketsPage() {
               <select className="w-full p-2 border rounded-md" value={newTrip.auditor} onChange={(e) => setNewTrip({...newTrip, auditor: e.target.value})}>
                 {["MARC", "JULE", "JAYSON", "MARC/JULE", "MARC/JAYSON"].map(val => <option key={val} value={val}>{val}</option>)}
               </select>
-              <select className="w-full p-2 border rounded-md" value={newTrip.status} onChange={(e) => setNewTrip({...newTrip, status: e.target.value as any})}>
+              <select className="w-full p-2 border rounded-md" value={newTrip.status} onChange={(e) => setNewTrip({...newTrip, status: e.target.value})}>
                 <option value="Complete">Complete Staff</option>
-                <option value="Lack">Lack of Staff</option>
+                <option value="Incomplete">Incomplete</option>
               </select>
-              {newTrip.staff.map((_, i) => (
+              {/* Laging 5 slots ang ipapakita */}
+              {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <input type="checkbox" checked={newTrip.staff[i].isPresent} onChange={(e) => {
-                    const s = [...newTrip.staff]; s[i] = {...s[i], isPresent: e.target.checked}; setNewTrip({...newTrip, staff: s});
+                  <input type="checkbox" checked={newTrip.staff[i]?.isPresent ?? true} onChange={(e) => {
+                    const s = [...newTrip.staff];
+                    s[i] = { name: s[i]?.name || "", isPresent: e.target.checked };
+                    setNewTrip({...newTrip, staff: s});
                   }} />
-                  <Input placeholder={`Staff ${i + 1}`} value={newTrip.staff[i].name} onChange={(e) => {
-                    const s = [...newTrip.staff]; s[i] = {...s[i], name: e.target.value}; setNewTrip({...newTrip, staff: s});
+                  <Input placeholder={`Staff ${i + 1}`} value={newTrip.staff[i]?.name || ""} onChange={(e) => {
+                    const s = [...newTrip.staff];
+                    s[i] = { name: e.target.value, isPresent: s[i]?.isPresent ?? true };
+                    setNewTrip({...newTrip, staff: s});
                   }} />
                 </div>
               ))}
@@ -148,7 +156,6 @@ export default function TripTicketsPage() {
         </Dialog>
       </div>
 
-      {/* TABLE AREA - Tinanggal ang bg-white, rounded-xl, shadow-sm, at border */}
       <div className="overflow-hidden">
         <Table>
           <TableHeader>
@@ -164,12 +171,12 @@ export default function TripTicketsPage() {
                 <TableCell className="text-sm">{formatDate(trip.startDate)} - {formatDate(trip.endDate)}</TableCell>
                 <TableCell>
                   <span className={cn("text-[10px] font-bold px-2 py-1 rounded-full", trip.status === "Complete" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
-                    {trip.status === "Complete" ? "COMPLETE" : "LACK OF STAFF"}
+                    {trip.status === "Complete" ? "COMPLETE" : "INCOMPLETE"}
                   </span>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {trip.staff.map((member, i) => (
+                    {trip.staff.filter(m => m.name.trim() !== "").map((member, i) => (
                       <span key={i} className={cn("px-2 py-1 rounded text-[10px] font-bold text-white", member.isPresent ? "bg-blue-500" : "bg-red-500")}>{member.name}</span>
                     ))}
                   </div>

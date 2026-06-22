@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
+// I-import ang getStorage
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCdMQBKjbLOo-74-JeReyTUPskBarQrD4g",
@@ -12,13 +14,13 @@ const firebaseConfig = {
   measurementId: "G-75VZG66K11"
 };
 
-// 1. Initialize Firebase (Check muna kung na-initialize na para iwas error)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// 2. Initialize Firestore
 export const db = getFirestore(app);
 
-// 3. Initialize Analytics na safe para sa Client/Server
+// I-initialize ang Storage
+export const storage = getStorage(app);
+
 export const analytics = typeof window !== 'undefined' 
   ? isSupported().then(yes => yes ? getAnalytics(app) : null) 
   : null;
