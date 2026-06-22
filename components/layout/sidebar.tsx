@@ -6,23 +6,41 @@ import { usePathname } from "next/navigation";
 export default function Sidebar() {
   const pathname = usePathname();
 
+  // Helper function para sa active link styling
   const getLinkClass = (path: string) => 
-    `block text-white transition py-2 px-3 rounded-lg ${pathname === path ? "bg-blue-600" : "hover:bg-slate-800"}`;
+    `block text-white transition py-2 px-3 rounded-lg ${
+      pathname === path ? "bg-blue-600 font-bold" : "hover:bg-slate-800"
+    }`;
 
   return (
-    <div className="h-full bg-[#0f172a] p-6 flex flex-col">
+    <div className="h-full w-64 bg-[#0f172a] p-6 flex flex-col border-r border-slate-700">
+      <div className="mb-8">
+        <h1 className="text-white font-black text-xl tracking-tighter">EXPENSE HUB</h1>
+      </div>
+
       <nav className="flex-grow space-y-2">
-        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4">Menu</p>
+        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4">
+          Main Menu
+        </p>
         
         <Link href="/trip-tickets" className={getLinkClass("/trip-tickets")}>
           Trip Tickets
         </Link>
-          <Link href="/calendar" className={getLinkClass("/calendar")}>
+          
+        <Link href="/calendar" className={getLinkClass("/calendar")}>
           Calendar
         </Link>
+
+        <Link href="/summary-of-sales" className={getLinkClass("/summary-of-sales")}>
+          Summary of Sales
+        </Link>
+        
       </nav>
 
       <nav className="border-t border-slate-700 pt-4">
+        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4">
+          Account
+        </p>
         <Link href="/profile" className={getLinkClass("/profile")}>
           Profile
         </Link>
