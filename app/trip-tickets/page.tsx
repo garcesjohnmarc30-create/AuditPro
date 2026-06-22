@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,20 +27,23 @@ export interface Trip {
 export default function TripTicketsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const [newTrip, setNewTrip] = useState({ 
+  const initialTripState = { 
     branch: "", startDate: "", endDate: "", auditor: "MARC",
-    staff: Array(4).fill({ name: "", isPresent: true }),
+    staff: Array(5).fill({ name: "", isPresent: true }),
     status: "Complete" as "Complete" | "Lack" 
-  });
+  };
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-    const foundTrip = trips.find(t => t.branch.toLowerCase() === value.toLowerCase());
-    if (foundTrip && rowRefs.current[foundTrip.id]) {
-      rowRefs.current[foundTrip.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+  const [newTrip, setNewTrip] = useState(initialTripState);
+
+  const analytics = {
+    branches: trips.length,
+    present: trips.flatMap(t => t.staff).filter(s => s.isPresent).length,
+    absent: trips.flatMap(t => t.staff).filter(s => !s.isPresent).length,
+    completeStaff: trips.filter(t => t.status === "Complete").length,
+    lackStaff: trips.filter(t => t.status === "Lack").length,
   };
 
   useEffect(() => {
@@ -52,51 +55,28 @@ export default function TripTicketsPage() {
     return () => unsubscribe();
   }, []);
 
-  const stats = useMemo(() => {
-    if (!trips || trips.length === 0) 
-      return { totalBranches: 0, present: 0, absent: 0, completeCount: 0, lackCount: 0 };
-      
-    let present = 0;
-    let absent = 0;
-    let completeCount = 0;
-    let lackCount = 0;
-
-    trips.forEach(t => {
-      if (t.status === "Complete") completeCount++;
-      else if (t.status === "Lack") lackCount++;
-
-      if (t.staff && Array.isArray(t.staff)) {
-        t.staff.forEach(s => {
-          if (s?.name && typeof s.name === 'string') {
-            s.isPresent ? present++ : absent++;
-          }
-        });
-      }
-    });
-    
-    return { 
-      totalBranches: new Set(trips.map(t => t.branch)).size, 
-      present, 
-      absent,
-      completeCount,
-      lackCount
-    };
-  }, [trips]);
-
-  const addTrip = async () => {
+  const saveTrip = async () => {
     if (!newTrip.branch) return;
     try {
-      await addDoc(collection(db, "trips"), {
+      const tripData = {
         branch: newTrip.branch,
         startDate: newTrip.startDate,
         endDate: newTrip.endDate,
         auditor: newTrip.auditor,
         staff: newTrip.staff.filter(s => s.name.trim() !== ""),
         status: newTrip.status
-      });
-      setNewTrip({ branch: "", startDate: "", endDate: "", auditor: "MARC", staff: Array(4).fill({ name: "", isPresent: true }), status: "Complete" });
+      };
+
+      if (editingId) {
+        await updateDoc(doc(db, "trips", editingId), tripData);
+      } else {
+        await addDoc(collection(db, "trips"), tripData);
+      }
+      setIsDialogOpen(false);
+      setEditingId(null);
+      setNewTrip(initialTripState);
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.error("Error saving document: ", e);
     }
   };
 
@@ -104,50 +84,41 @@ export default function TripTicketsPage() {
     await deleteDoc(doc(db, "trips", id));
   };
 
-  // UPDATED: Date format sa "June 20, 2026"
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString("en-US", { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric',
-      timeZone: 'UTC' 
-    });
+    return new Date(dateStr).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
   };
 
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
-      <div className="pb-6 mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900">Trip Tickets Overview</h1>
-        <p className="text-zinc-500 text-sm">Manage and monitor all audit branch assignments.</p>
-      </div>
-      
-      <div className="flex gap-4 mb-6">
+      <h1 className="text-2xl font-bold text-zinc-900 mb-2">Trip Tickets Overview</h1>
+      <p className="text-zinc-500 mb-6">Manage and monitor all audit branch assignments.</p>
+
+      {/* ANALYTICS SECTION */}
+      <div className="flex flex-row gap-8 mb-8">
         {[
-          {l: "Branches", v: stats.totalBranches, c: "text-zinc-900"}, 
-          {l: "Present", v: stats.present, c: "text-blue-500"}, 
-          {l: "Absent", v: stats.absent, c: "text-red-500"},
-          {l: "Complete Staff", v: stats.completeCount, c: "text-green-600"},
-          {l: "Lack of Staff", v: stats.lackCount, c: "text-red-600"}
-        ].map((s, i) => (
-          <div key={i} className="bg-white p-5 rounded-xl border border-zinc-100 shadow-sm w-48">
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{s.l}</p>
-            <p className={`text-3xl font-bold ${s.c}`}>{s.v}</p>
+          { label: "BRANCHES", val: analytics.branches, color: "text-zinc-900" },
+          { label: "PRESENT", val: analytics.present, color: "text-blue-500" },
+          { label: "ABSENT", val: analytics.absent, color: "text-red-500" },
+          { label: "COMPLETE STAFF", val: analytics.completeStaff, color: "text-green-600" },
+          { label: "LACK OF STAFF", val: analytics.lackStaff, color: "text-red-600" },
+        ].map((item, i) => (
+          <div key={i} className="flex-1">
+            <div className="text-[10px] font-bold text-zinc-500">{item.label}</div>
+            <div className={`text-3xl font-bold ${item.color}`}>{item.val}</div>
           </div>
         ))}
       </div>
-
+      
       <div className="mb-6 flex gap-2">
-        <Input 
-          placeholder="Search branch..." 
-          className="max-w-xs bg-white" 
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)} 
-        />
-        <Dialog>
-          <DialogTrigger asChild><Button>+ New Ticket</Button></DialogTrigger>
+        <Input placeholder="Search branch..." className="max-w-xs bg-white" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => { setEditingId(null); setNewTrip(initialTripState); }}>+ New Ticket</Button>
+          </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Add New Trip Ticket</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editingId ? "Edit Ticket" : "Add New Trip Ticket"}</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
               <Input placeholder="Branch Name" value={newTrip.branch} onChange={(e) => setNewTrip({...newTrip, branch: e.target.value})} />
               <div className="flex gap-2">
@@ -155,11 +126,9 @@ export default function TripTicketsPage() {
                 <Input type="date" value={newTrip.endDate} onChange={(e) => setNewTrip({...newTrip, endDate: e.target.value})} />
               </div>
               <select className="w-full p-2 border rounded-md" value={newTrip.auditor} onChange={(e) => setNewTrip({...newTrip, auditor: e.target.value})}>
-                <option value="MARC">MARC</option>
-                <option value="JULE">JULE</option>
-                <option value="JAYSON">JAYSON</option>
+                {["MARC", "JULE", "JAYSON", "MARC/JULE", "MARC/JAYSON"].map(val => <option key={val} value={val}>{val}</option>)}
               </select>
-              <select className="w-full p-2 border rounded-md" value={newTrip.status} onChange={(e) => setNewTrip({...newTrip, status: e.target.value as "Complete" | "Lack"})}>
+              <select className="w-full p-2 border rounded-md" value={newTrip.status} onChange={(e) => setNewTrip({...newTrip, status: e.target.value as any})}>
                 <option value="Complete">Complete Staff</option>
                 <option value="Lack">Lack of Staff</option>
               </select>
@@ -173,57 +142,45 @@ export default function TripTicketsPage() {
                   }} />
                 </div>
               ))}
-              <Button onClick={addTrip}>Save Ticket</Button>
+              <Button onClick={saveTrip}>{editingId ? "Update Ticket" : "Save Ticket"}</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* TABLE AREA - Tinanggal ang bg-white, rounded-xl, shadow-sm, at border */}
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-none">
-              <TableHead className="text-zinc-900 font-bold">Branch</TableHead>
-              <TableHead className="text-zinc-900 font-bold">Auditor</TableHead>
-              <TableHead className="text-zinc-900 font-bold">Date Range</TableHead>
-              <TableHead className="text-zinc-900 font-bold">Status</TableHead>
-              <TableHead className="text-zinc-900 font-bold">Staff</TableHead>
-              <TableHead></TableHead>
+              <TableHead>Branch</TableHead><TableHead>Auditor</TableHead><TableHead>Date Range</TableHead><TableHead>Status</TableHead><TableHead>Staff</TableHead><TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {trips.filter(t => t.branch.toLowerCase().includes(searchQuery.toLowerCase())).map((trip) => (
-              <TableRow 
-                key={trip.id} 
-                className="border-none hover:bg-zinc-50"
-                ref={(el) => { rowRefs.current[trip.id] = el; }}
-              >
-                <TableCell className="font-medium text-zinc-900">{trip.branch}</TableCell>
-                <TableCell className="font-semibold text-zinc-600">{trip.auditor || "N/A"}</TableCell>
-                <TableCell className="text-zinc-500 text-sm">
-                  {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
-                </TableCell>
+              <TableRow key={trip.id} className="border-none hover:bg-zinc-100">
+                <TableCell className="font-medium">{trip.branch}</TableCell>
+                <TableCell>{trip.auditor}</TableCell>
+                <TableCell className="text-sm">{formatDate(trip.startDate)} - {formatDate(trip.endDate)}</TableCell>
                 <TableCell>
-                  <span className={cn(
-                    "text-[10px] font-bold px-2 py-1 rounded-full", 
-                    trip.status === "Complete" 
-                      ? "bg-green-100 text-green-700" 
-                      : "bg-red-100 text-red-700"
-                  )}>
+                  <span className={cn("text-[10px] font-bold px-2 py-1 rounded-full", trip.status === "Complete" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
                     {trip.status === "Complete" ? "COMPLETE" : "LACK OF STAFF"}
                   </span>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {trip.staff.map((member, i) => (
-                      <span key={i} className={cn("px-2 py-1 rounded text-[10px] font-bold text-white", member.isPresent ? "bg-blue-500" : "bg-red-500")}>
-                        {member.name}
-                      </span>
+                      <span key={i} className={cn("px-2 py-1 rounded text-[10px] font-bold text-white", member.isPresent ? "bg-blue-500" : "bg-red-500")}>{member.name}</span>
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-right">
-                    <Button variant="ghost" className="text-red-500 h-8" onClick={() => deleteTrip(trip.id)}>Remove</Button>
+                <TableCell className="text-right flex gap-2 justify-end">
+                  <Button variant="ghost" className="text-blue-500 h-8" onClick={() => { 
+                    setNewTrip(trip); 
+                    setEditingId(trip.id); 
+                    setIsDialogOpen(true); 
+                  }}>Edit</Button>
+                  <Button variant="ghost" className="text-red-500 h-8" onClick={() => deleteTrip(trip.id)}>Remove</Button>
                 </TableCell>
               </TableRow>
             ))}
