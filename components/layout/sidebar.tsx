@@ -14,11 +14,9 @@ export default function Sidebar() {
 
   return (
     <div className="h-full w-64 bg-[#0f172a] p-6 flex flex-col border-r border-slate-700">
-      <div className="mb-8">
-        <h1 className="text-white font-black text-xl tracking-tighter">EXPENSE HUB</h1>
-      </div>
-
-      <nav className="flex-grow space-y-2">
+      
+      {/* Navigation section - inadjust ang top padding dahil wala na ang header */}
+      <nav className="flex-grow space-y-2 pt-4">
         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-4">
           Main Menu
         </p>
