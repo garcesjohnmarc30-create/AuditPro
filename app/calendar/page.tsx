@@ -130,7 +130,7 @@ export default function CalendarPage() {
                     <p className="text-[10px] font-bold truncate">{trip.branch}</p>
                     <p className="text-[9px] uppercase font-semibold">{trip.status}</p>
                     <p className="text-[9px] font-bold">{trip.auditor}</p>
-                    <button onClick={() => { setRemarksModal(trip); setTempRemarks(trip.remarks || ""); }} className="w-full !bg-black text-black text-[8px] p-0.5 mt-1 rounded hover:bg-gray-800">REMARKS</button>
+                    <button onClick={() => { setRemarksModal(trip); setTempRemarks(trip.remarks || ""); }} className="w-full !bg-white text-black text-[8px] p-0.5 mt-1 rounded hover:bg-gray-800">REMARKS</button>
                     <div className="absolute top-0 right-0 flex gap-0.5 opacity-0 group-hover:opacity-100">
                       <button onClick={() => startEditing(trip)}><Edit2 size={9}/></button>
                       <button onClick={() => handleDelete(trip.id)}><Trash2 size={9}/></button>
