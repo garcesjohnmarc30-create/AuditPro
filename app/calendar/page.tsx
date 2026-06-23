@@ -117,7 +117,7 @@ export default function CalendarPage() {
                 <div className="flex gap-1">
                    <button
   onClick={() => setViewModal(dateKey)}
-  className="bg-white text-black text-[8px] px-2 py-0.5 rounded hover:bg-gray-800 transition-colors font-medium"
+  className="bg-white text-black text-[8px] px-2 py-0.5 rounded hover:bg-gray-100 transition-colors font-medium border border-gray-200"
 >
   VIEW
 </button>
