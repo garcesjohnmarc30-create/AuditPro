@@ -29,7 +29,7 @@ export default function Sidebar() {
         <Link href="/calendar" className={getLinkClass("/calendar")}>
           Calendar
         </Link>
-        
+
         {/* Ang "Summary of Sales" link ay tinanggal na rito */}
       </nav>
 
