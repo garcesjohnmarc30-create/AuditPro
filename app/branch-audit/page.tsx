@@ -1,5 +1,4 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
@@ -27,8 +26,8 @@ export interface Trip {
 export default function BranchAuditPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   const initialTripState = { 
     branch: "", 
@@ -66,7 +65,6 @@ export default function BranchAuditPage() {
         startDate: newTrip.startDate,
         endDate: newTrip.endDate,
         auditor: newTrip.auditor,
-        // Sinave ang buong array para manatili ang 5 slots
         staff: newTrip.staff, 
         status: newTrip.status 
       };
@@ -135,7 +133,6 @@ export default function BranchAuditPage() {
                 <option value="Complete">Complete Staff</option>
                 <option value="Incomplete">Incomplete</option>
               </select>
-              {/* Laging 5 slots ang ipapakita */}
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <input type="checkbox" checked={newTrip.staff[i]?.isPresent ?? true} onChange={(e) => {
@@ -182,11 +179,7 @@ export default function BranchAuditPage() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right flex gap-2 justify-end">
-                  <Button variant="ghost" className="text-blue-500 h-8" onClick={() => { 
-                    setNewTrip(trip); 
-                    setEditingId(trip.id); 
-                    setIsDialogOpen(true); 
-                  }}>Edit</Button>
+                  <Button variant="ghost" className="text-blue-500 h-8" onClick={() => { setNewTrip(trip); setEditingId(trip.id); setIsDialogOpen(true); }}>Edit</Button>
                   <Button variant="ghost" className="text-red-500 h-8" onClick={() => deleteTrip(trip.id)}>Remove</Button>
                 </TableCell>
               </TableRow>
