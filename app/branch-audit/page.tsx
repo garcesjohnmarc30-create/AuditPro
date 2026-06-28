@@ -24,7 +24,7 @@ export interface Trip {
   status: string;
 }
 
-export default function TripTicketsPage() {
+export default function BranchAuditPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export default function TripTicketsPage() {
 
   return (
     <div className="p-8 bg-zinc-50 min-h-screen">
-      <h1 className="text-2xl font-bold text-zinc-900 mb-2">Trip Tickets Overview</h1>
+      <h1 className="text-2xl font-bold text-zinc-900 mb-2">Branch Audit Overview</h1>
       <p className="text-zinc-500 mb-6">Manage and monitor all audit branch assignments.</p>
 
       <div className="flex flex-row gap-8 mb-8">
@@ -118,10 +118,10 @@ export default function TripTicketsPage() {
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingId(null); setNewTrip(initialTripState); }}>+ New Ticket</Button>
+            <Button onClick={() => { setEditingId(null); setNewTrip(initialTripState); }}>+ New Branch</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>{editingId ? "Edit Ticket" : "Add New Trip Ticket"}</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editingId ? "Edit Branch" : "Add New Branch"}</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
               <Input placeholder="Branch Name" value={newTrip.branch} onChange={(e) => setNewTrip({...newTrip, branch: e.target.value})} />
               <div className="flex gap-2">
@@ -150,7 +150,7 @@ export default function TripTicketsPage() {
                   }} />
                 </div>
               ))}
-              <Button onClick={saveTrip}>{editingId ? "Update Ticket" : "Save Ticket"}</Button>
+              <Button onClick={saveTrip}>{editingId ? "Update Branch" : "Save Branch"}</Button>
             </div>
           </DialogContent>
         </Dialog>

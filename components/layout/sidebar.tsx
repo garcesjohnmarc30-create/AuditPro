@@ -22,14 +22,14 @@ export default function Sidebar() {
           Main Menu
         </p>
         
-        <Link href="/trip-tickets" className={getLinkClass("/trip-tickets")}>
-          Trip Tickets
+        <Link href="/Branch Audit" className={getLinkClass("/Branch Audit")}>
+          Branch Audit
         </Link>
           
         <Link href="/calendar" className={getLinkClass("/calendar")}>
           Calendar
         </Link>
-
+        
         {/* Ang "Summary of Sales" link ay tinanggal na rito */}
       </nav>
 
